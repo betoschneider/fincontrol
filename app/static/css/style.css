@@ -1091,6 +1091,47 @@ body.light-theme.investment-mode .app-header {
     margin-top: 4px;
 }
 
+.chart-card-header-with-zones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.chart-card-header-with-zones h3 {
+    margin: 0;
+}
+
+.inv-deviation-zones-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+.inv-deviation-zones-header .zone-tag.subalocado {
+    color: var(--color-investimento, #0072b2);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0, 114, 178, 0.12);
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.inv-deviation-zones-header .zone-tag.sobrealocado {
+    color: var(--color-despesa, #d55e00);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(213, 94, 0, 0.12);
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
 .investment-chart-container {
     min-height: 420px;
     max-height: 560px;

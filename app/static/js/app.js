@@ -1471,7 +1471,8 @@ function atualizarMetricas() {
             deltaEl.title = `Comparado ao saldo projetado do mês anterior: ${formatarMoeda(prevProjetado)}`;
             deltaEl.classList.remove('positive', 'negative');
         } else {
-            deltaEl.textContent = `${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
+            const seta = percent >= 0 ? '▲ ' : '▼ ';
+            deltaEl.textContent = `${seta}${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
             deltaEl.title = `Comparado ao saldo projetado do mês anterior: ${formatarMoeda(prevProjetado)}\nAtual: ${formatarMoeda(saldoProjetado)} • Diferença: ${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
             deltaEl.classList.remove('positive', 'negative');
             deltaEl.classList.add(percent >= 0 ? 'positive' : 'negative');
@@ -1551,7 +1552,8 @@ function atualizarMetricas() {
                 deltaAnoEl.title = `Comparado ao Saldo Total Efetivo de ${anoAtivo - 1}: ${formatarMoeda(saldoAntEfet)}`;
                 deltaAnoEl.classList.remove('positive', 'negative');
             } else {
-                deltaAnoEl.textContent = `${percentAno >= 0 ? '+' : ''}${percentAno.toFixed(1)}% vs ${anoAtivo - 1}`;
+                const setaAno = percentAno >= 0 ? '▲ ' : '▼ ';
+                deltaAnoEl.textContent = `${setaAno}${percentAno >= 0 ? '+' : ''}${percentAno.toFixed(1)}% vs ${anoAtivo - 1}`;
                 deltaAnoEl.title = `Saldo Total do Ano Projetado (${anoAtivo}) comparado ao Saldo Total Efetivo de ${anoAtivo - 1}\nAno anterior efetivo: ${formatarMoeda(saldoAntEfet)}\nEste ano projetado: ${formatarMoeda(saldoAnoProj)}\nVariação: ${percentAno >= 0 ? '+' : ''}${percentAno.toFixed(1)}%`;
                 deltaAnoEl.classList.remove('positive', 'negative');
                 deltaAnoEl.classList.add(percentAno >= 0 ? 'positive' : 'negative');
@@ -2390,6 +2392,31 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
         mapaCoresCategorias[cat] = backgroundColorsRosca[idx];
     });
 
+    // Plugin pré-atentivo: exibe a porcentagem apenas no final da maior barra (índice 0)
+    const maxValRosca = valoresCategorias[0] || 0;
+    const barLabelsRoscaPlugin = {
+        id: 'barLabelsRosca',
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || !meta.data || !meta.data[0]) return;
+            const total = valoresCategorias.reduce((sum, v) => sum + (typeof v === 'number' ? v : 0), 0);
+            if (!total) return;
+
+            const bar = meta.data[0];
+            const val = valoresCategorias[0];
+            if (val === undefined || val === null || val <= 0) return;
+
+            const pct = ((val / total) * 100).toFixed(1) + '%';
+            ctx.save();
+            ctx.font = '600 11px Outfit, sans-serif';
+            ctx.fillStyle = corTextoTema();
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pct, bar.x + 8, bar.y);
+            ctx.restore();
+        }
+    };
+
     chartRoscaInstancia = new Chart(ctxRosca, {
         type: 'bar',
         data: {
@@ -2406,6 +2433,9 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: { right: 24 }
+            },
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -2421,14 +2451,16 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
             },
             scales: {
                 x: {
-                    display: false
+                    display: false,
+                    max: maxValRosca ? maxValRosca * 1.25 : undefined
                 },
                 y: {
                     grid: { display: false },
                     ticks: { color: corTextoTema(), font: { family: 'Outfit', size: 12 } }
                 }
             }
-        }
+        },
+        plugins: [barLabelsRoscaPlugin]
     });
 
     const coresBarrasH = labelsItens.map(itemLabel => {
@@ -2439,6 +2471,31 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
         }
         return `rgba(${rgbBase[0]}, ${rgbBase[1]}, ${rgbBase[2]}, 0.85)`;
     });
+
+    // Plugin pré-atentivo: exibe a porcentagem apenas no final da maior barra do ranking (índice 0)
+    const maxValItens = valoresItens[0] || 0;
+    const barLabelsBarrasHPlugin = {
+        id: 'barLabelsBarrasH',
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || !meta.data || !meta.data[0]) return;
+            const total = valoresItens.reduce((sum, v) => sum + (typeof v === 'number' ? v : 0), 0);
+            if (!total) return;
+
+            const bar = meta.data[0];
+            const val = valoresItens[0];
+            if (val === undefined || val === null || val <= 0) return;
+
+            const pct = ((val / total) * 100).toFixed(1) + '%';
+            ctx.save();
+            ctx.font = '600 11px Outfit, sans-serif';
+            ctx.fillStyle = corTextoTema();
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pct, bar.x + 8, bar.y);
+            ctx.restore();
+        }
+    };
 
     chartBarrasHInstancia = new Chart(ctxBarrasH, {
         type: 'bar',
@@ -2456,6 +2513,9 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: { right: 24 }
+            },
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -2471,14 +2531,16 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
             },
             scales: {
                 x: {
-                    display: false
+                    display: false,
+                    max: maxValItens ? maxValItens * 1.25 : undefined
                 },
                 y: {
                     grid: { display: false },
                     ticks: { color: corTextoTema(), font: { family: 'Outfit', size: 12 } }
                 }
             }
-        }
+        },
+        plugins: [barLabelsBarrasHPlugin]
     });
 }
 
@@ -2589,7 +2651,8 @@ function renderInvestmentPortfolio() {
         const portfolioYield = metrics.portfolio_yield;
         if (portfolioYield !== null && portfolioYield !== undefined) {
             const signal = portfolioYield >= 0 ? "+" : "";
-            yieldEl.textContent = `${signal}${formatNumber(portfolioYield, 2)}%`;
+            const seta = portfolioYield >= 0 ? "▲ " : "▼ ";
+            yieldEl.textContent = `${seta}${signal}${formatNumber(portfolioYield, 2)}%`;
             yieldEl.style.color = portfolioYield >= 0 ? "var(--color-receita, #009e73)" : "var(--color-despesa, #d55e00)";
             yieldEl.title = `Custo total: ${formatarMoeda(metrics.total_cost || 0)}`;
         } else {
@@ -2603,7 +2666,8 @@ function renderInvestmentPortfolio() {
         const deltaLatest = metrics.metric_delta_latest;
         if (deltaLatest !== null && deltaLatest !== undefined) {
             const signal = deltaLatest >= 0 ? "+" : "";
-            deltaLatestEl.textContent = `${signal}${formatNumber(deltaLatest, 2)}% (vs. anterior)`;
+            const seta = deltaLatest >= 0 ? "▲ " : "▼ ";
+            deltaLatestEl.textContent = `${seta}${signal}${formatNumber(deltaLatest, 2)}% (vs. anterior)`;
             deltaLatestEl.style.color = deltaLatest >= 0 ? "var(--color-receita, #009e73)" : "var(--color-despesa, #d55e00)";
         } else {
             deltaLatestEl.textContent = "";
@@ -2649,7 +2713,9 @@ function renderInvestmentPortfolio() {
         appendCell(tr, formatarMoeda(asset.total || 0), "numeric");
         appendCell(tr, `${formatNumber(asset.target || 0, 2)}%`, "numeric");
         appendCell(tr, `${formatNumber(asset.current_percent || 0, 2)}%`, "numeric");
-        appendCell(tr, `${formatNumber(asset.deviation || 0, 2)}%`, `numeric ${asset.deviation < 0 ? "deviation-negative" : "deviation-positive"}`);
+        const devSignal = (asset.deviation || 0) >= 0 ? "+" : "";
+        const devSeta = (asset.deviation || 0) >= 0 ? "▲ " : "▼ ";
+        appendCell(tr, `${devSeta}${devSignal}${formatNumber(asset.deviation || 0, 2)}%`, `numeric ${asset.deviation < 0 ? "deviation-negative" : "deviation-positive"}`);
         appendCell(tr, asset.sector || "-");
         appendCell(tr, asset.group || "-");
         tbody.appendChild(tr);
@@ -2667,6 +2733,31 @@ function renderDeviationChart(assets) {
     const colors = assets.map(asset => colorForGroup(asset.group));
     const textColor = getComputedStyle(document.body).getPropertyValue("--text-secondary").trim() || "#9090a2";
     const gridColor = getComputedStyle(document.body).getPropertyValue("--border-color").trim() || "rgba(255,255,255,.08)";
+
+    // Zonas de fundo pré-atentivas: Subalocado (esquerda) vs Sobrealocado (direita)
+    const backgroundZonesPlugin = {
+        id: "backgroundZones",
+        beforeDraw(chart) {
+            const { ctx, chartArea, scales } = chart;
+            const xScale = scales.x;
+            if (!chartArea || !xScale) return;
+            const x0 = xScale.getPixelForValue(0);
+
+            ctx.save();
+            // Região à esquerda do zero (Subalocado - precisa de aporte)
+            if (x0 > chartArea.left) {
+                ctx.fillStyle = "rgba(0, 114, 178, 0.06)";
+                ctx.fillRect(chartArea.left, chartArea.top, x0 - chartArea.left, chartArea.height);
+            }
+
+            // Região à direita do zero (Sobrealocado - aguardar)
+            if (x0 < chartArea.right) {
+                ctx.fillStyle = "rgba(213, 94, 0, 0.05)";
+                ctx.fillRect(x0, chartArea.top, chartArea.right - x0, chartArea.height);
+            }
+            ctx.restore();
+        }
+    };
 
     const zeroLinePlugin = {
         id: "zeroLine",
@@ -2723,7 +2814,7 @@ function renderDeviationChart(assets) {
                 }
             }
         },
-        plugins: [zeroLinePlugin]
+        plugins: [backgroundZonesPlugin, zeroLinePlugin]
     });
 }
 
@@ -3017,8 +3108,74 @@ function renderizarEvolucao() {
         return dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
     });
 
+    // Plugin pré-atentivo: destaca o último ponto com etiquetas de valor imediato
+    const ultimoPontoLabelPlugin = {
+        id: "ultimoPontoLabel",
+        afterDatasetsDraw(chart) {
+            if (!dados || dados.length === 0) return;
+            const lastIdx = dados.length - 1;
+            const ctxChart = chart.ctx;
+            const metaYield = chart.getDatasetMeta(0);
+            const metaPatr = chart.getDatasetMeta(1);
+            if (!metaYield?.data?.[lastIdx] || !metaPatr?.data?.[lastIdx]) return;
+
+            const ptYield = metaYield.data[lastIdx];
+            const ptPatr = metaPatr.data[lastIdx];
+            const lastYieldVal = dados[lastIdx].yield;
+            const lastPatrVal = dados[lastIdx].value;
+
+            ctxChart.save();
+            ctxChart.font = "bold 11px Outfit, sans-serif";
+
+            // Label Patrimônio (Azul #0072b2)
+            if (lastPatrVal !== null && lastPatrVal !== undefined) {
+                const textPatr = formatarMoeda(lastPatrVal);
+                const textWidth = ctxChart.measureText(textPatr).width;
+                const boxX = Math.max(chart.chartArea.left + 4, ptPatr.x - textWidth - 14);
+                const boxY = ptPatr.y - 10;
+                ctxChart.fillStyle = "rgba(0, 114, 178, 0.92)";
+                ctxChart.beginPath();
+                if (ctxChart.roundRect) {
+                    ctxChart.roundRect(boxX, boxY, textWidth + 10, 20, 4);
+                } else {
+                    ctxChart.rect(boxX, boxY, textWidth + 10, 20);
+                }
+                ctxChart.fill();
+                ctxChart.fillStyle = "#ffffff";
+                ctxChart.textBaseline = "middle";
+                ctxChart.textAlign = "left";
+                ctxChart.fillText(textPatr, boxX + 5, boxY + 10);
+            }
+
+            // Label Yield (Laranja #e69f00)
+            if (lastYieldVal !== null && lastYieldVal !== undefined) {
+                const textYield = `${lastYieldVal >= 0 ? "▲ +" : "▼ "}${formatNumber(lastYieldVal, 2)}%`;
+                const textWidth = ctxChart.measureText(textYield).width;
+                const boxX = Math.max(chart.chartArea.left + 4, ptYield.x - textWidth - 14);
+                let boxY = ptYield.y - 10;
+                if (Math.abs(ptPatr.y - ptYield.y) < 24) {
+                    boxY = ptYield.y > ptPatr.y ? ptYield.y + 6 : ptYield.y - 24;
+                }
+                ctxChart.fillStyle = "rgba(230, 159, 0, 0.95)";
+                ctxChart.beginPath();
+                if (ctxChart.roundRect) {
+                    ctxChart.roundRect(boxX, boxY, textWidth + 10, 20, 4);
+                } else {
+                    ctxChart.rect(boxX, boxY, textWidth + 10, 20);
+                }
+                ctxChart.fill();
+                ctxChart.fillStyle = "#1e1e24";
+                ctxChart.textBaseline = "middle";
+                ctxChart.textAlign = "left";
+                ctxChart.fillText(textYield, boxX + 5, boxY + 10);
+            }
+
+            ctxChart.restore();
+        }
+    };
+
     // Gráfico único: Yield (%) e Patrimônio sobrepostos no mesmo eixo X,
-    // com eixos Y independentes e sem rótulos
+    // com eixos Y independentes e grades mapeadas nas cores das séries
     chartEvolucaoInstancia = new Chart(ctx, {
         type: "line",
         data: {
@@ -3033,8 +3190,8 @@ function renderizarEvolucao() {
                     fill: true,
                     tension: 0.3,
                     borderWidth: 2,
-                    pointRadius: mostrarPontos ? 4 : 0,
-                    pointHoverRadius: 6,
+                    pointRadius: dados.map((d, i) => (i === dados.length - 1 ? 6 : (mostrarPontos ? 4 : 0))),
+                    pointHoverRadius: 8,
                     pointBackgroundColor: "#e69f00",
                     pointBorderColor: "#e69f00",
                     pointBorderWidth: 0
@@ -3048,8 +3205,8 @@ function renderizarEvolucao() {
                     fill: true,
                     tension: 0.3,
                     borderWidth: 2,
-                    pointRadius: mostrarPontos ? 4 : 0,
-                    pointHoverRadius: 6,
+                    pointRadius: dados.map((d, i) => (i === dados.length - 1 ? 6 : (mostrarPontos ? 4 : 0))),
+                    pointHoverRadius: 8,
                     pointBackgroundColor: "#0072b2",
                     pointBorderColor: "#0072b2",
                     pointBorderWidth: 0
@@ -3093,17 +3250,25 @@ function renderizarEvolucao() {
                 yYield: {
                     type: "linear",
                     position: "left",
-                    grid: { color: gridColor },
+                    grid: {
+                        color: "rgba(230, 159, 0, 0.14)", // alaranjado suave vinculado à série Yield
+                        drawOnChartArea: true
+                    },
                     ticks: { display: false }
                 },
                 yPatrimonio: {
                     type: "linear",
                     position: "right",
-                    grid: { drawOnChartArea: false },
+                    grid: {
+                        color: "rgba(0, 114, 178, 0.14)", // azul suave vinculado à série Patrimônio
+                        drawOnChartArea: true,
+                        borderDash: [3, 3]
+                    },
                     ticks: { display: false }
                 }
             }
-        }
+        },
+        plugins: [ultimoPontoLabelPlugin]
     });
 }
 
@@ -3218,7 +3383,8 @@ function renderizarYieldDetails(details) {
         tdYield.className = "numeric";
         if (item.yield_percent !== null && item.yield_percent !== undefined) {
             const signal = item.yield_percent >= 0 ? "+" : "";
-            tdYield.textContent = `${signal}${formatNumber(item.yield_percent, 2)}%`;
+            const seta = item.yield_percent >= 0 ? "▲ " : "▼ ";
+            tdYield.textContent = `${seta}${signal}${formatNumber(item.yield_percent, 2)}%`;
             tdYield.style.color = item.yield_percent >= 0 ? "var(--color-receita, #009e73)" : "var(--color-despesa, #d55e00)";
             tdYield.style.fontWeight = "600";
         } else {
