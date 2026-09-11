@@ -19,7 +19,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Versão dos assets para cache-busting: incremente manualmente ao deploy (ex: v1 -> v2) -->
-    <link rel="stylesheet" href="css/style.css?v=39">
+    <link rel="stylesheet" href="css/style.css?v=40">
 </head>
 
 <body>
@@ -239,6 +239,51 @@
                 <div class="chart-container">
                     <canvas id="chart-mensal"></canvas>
                 </div>
+            </div>
+        </section>
+
+        <!-- Cards de Resumo por Tipo (Mês Atual, Média Efetivada, Média Prevista) -->
+        <section class="cards-tipos-grid financial-only" id="section-cards-tipos">
+            <!-- Card 1: Total do Mês Atual (Efetivados, Previstos e Total) -->
+            <div class="metric-card glass card-tipo-detalhe" id="card-tipo-mes-atual">
+                <div class="card-tipo-header">
+                    <div class="card-tipo-header-title">
+                        <div class="metric-icon income" style="width:38px;height:38px;font-size:16px;"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div>
+                            <span class="metric-label" id="label-card-tipo-mes">Lançamentos do Mês</span>
+                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-mes">Efetivados, previstos e total</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-tipo-body" id="body-card-tipo-mes"></div>
+            </div>
+
+            <!-- Card 2: Média Anual Efetivada até o Mês Anterior -->
+            <div class="metric-card glass card-tipo-detalhe" id="card-tipo-media-efetivada">
+                <div class="card-tipo-header">
+                    <div class="card-tipo-header-title">
+                        <div class="metric-icon income-year" style="width:38px;height:38px;font-size:16px;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div>
+                            <span class="metric-label" id="label-card-tipo-media-efetivada">Média Anual Efetivada</span>
+                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-media-efetivada">Até o mês anterior</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-tipo-body" id="body-card-tipo-media-efetivada"></div>
+            </div>
+
+            <!-- Card 3: Média Prevista para os Meses Seguintes -->
+            <div class="metric-card glass card-tipo-detalhe" id="card-tipo-media-prevista">
+                <div class="card-tipo-header">
+                    <div class="card-tipo-header-title">
+                        <div class="metric-icon projection" style="width:38px;height:38px;font-size:16px;"><i class="fa-solid fa-forward"></i></div>
+                        <div>
+                            <span class="metric-label" id="label-card-tipo-media-prevista">Média Prevista</span>
+                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-media-prevista">Meses seguintes</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-tipo-body" id="body-card-tipo-media-prevista"></div>
             </div>
         </section>
 
@@ -858,7 +903,7 @@
     </div>
 
     <!-- Scripts da Aplicação -->
-    <script src="js/app.js?v=39"></script>
+    <script src="js/app.js?v=40"></script>
 </body>
 
 </html>

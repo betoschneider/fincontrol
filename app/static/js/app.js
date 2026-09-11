@@ -1558,6 +1558,9 @@ function atualizarMetricas() {
             }
         }
     }
+
+    // Atualiza os cards contendo todos os tipos de lançamentos
+    atualizarCardsTipos();
 }
 
 function ajustarCorMetrica(elemento, valor) {
@@ -1684,17 +1687,17 @@ const MEDIA_LABELS = {
 };
 
 const CORES_RGB = {
-    "Receita": [46, 204, 113],
-    "Despesa": [231, 76, 60],
-    "Investimento": [52, 152, 219],
-    "Reserva": [241, 196, 15]
+    "Receita": [0, 158, 115],      // Okabe-Ito Verde-azulado (#009E73)
+    "Despesa": [213, 94, 0],       // Okabe-Ito Vermelhão (#D55E00)
+    "Investimento": [0, 114, 178], // Okabe-Ito Azul profundo (#0072B2)
+    "Reserva": [240, 228, 66]      // Okabe-Ito Amarelo (#F0E442)
 };
 
 const CORES_EXTRAS_RGB = [
-    [155, 89, 182],
-    [26, 188, 156],
-    [230, 126, 34],
-    [52, 73, 94]
+    [86, 180, 233],   // #56B4E9 Céu
+    [204, 121, 167],  // #CC79A7 Roxo-rosado
+    [230, 159, 0],    // #E69F00 Laranja
+    [153, 153, 153]   // #999999 Cinza
 ];
 
 function corTextoTema() {
@@ -1719,7 +1722,10 @@ function gerarCoresCategoriasDistintas(rgbBase, quantidade) {
 }
 
 function obterCorTipoRGB(tipoStr, index = 0) {
+    if (!tipoStr) return CORES_EXTRAS_RGB[index % CORES_EXTRAS_RGB.length];
     const busca = tipoStr.trim().charAt(0).toUpperCase() + tipoStr.trim().slice(1).toLowerCase();
+    if (busca === "Entrada" || busca === "Entradas") return CORES_RGB["Receita"];
+    if (busca === "Saída" || busca === "Saídas" || busca === "Saida" || busca === "Saidas") return CORES_RGB["Despesa"];
     if (CORES_RGB[busca]) {
         return CORES_RGB[busca];
     }
@@ -1745,17 +1751,410 @@ function calcularMediaTipo(valores, metodo) {
     return total / 12.0;
 }
 
+
+function obterTodosTipos() {
+    const tiposSet = new Set();
+    const padroes = ["Receita", "Despesa", "Investimento", "Reserva"];
+    padroes.forEach(t => tiposSet.add(t));
+
+    // Inclui tipos do cache de configurações se houver
+    if (typeof getTiposOptions === "function") {
+        getTiposOptions().forEach(t => {
+            if (t) tiposSet.add(t.trim().charAt(0).toUpperCase() + t.trim().slice(1).toLowerCase());
+        });
+    }
+
+    // Inclui tipos presentes nos dados do ano atual
+    dadosPivotados.forEach(row => {
+        const t = getTipoFromRow(row).trim();
+        if (t) tiposSet.add(t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
+    });
+
+    // Inclui tipos presentes nos dados do ano anterior
+    if (dadosPivotadosAnoAnterior && dadosPivotadosAnoAnterior.length > 0) {
+        dadosPivotadosAnoAnterior.forEach(row => {
+            const t = (row.tipo || "").trim();
+            if (t) tiposSet.add(t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
+        });
+    }
+
+    return Array.from(tiposSet).sort((a, b) => {
+        const idxA = padroes.indexOf(a);
+        const idxB = padroes.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+    });
+}
+
+function atualizarCardsTipos() {
+    const section = document.getElementById("section-cards-tipos");
+    if (!section) return;
+
+    const mesAtualNum = new Date().getMonth() + 1; // 1-12
+    const isAnoCompleto = mesFiltrado === "Ano Completo";
+    const mesAlvo = isAnoCompleto ? MESES_MAPA[mesAtualNum] : mesFiltrado;
+    const numMesAlvo = MAPA_REVERSO_MES[mesAlvo] || mesAtualNum;
+
+    const tipos = obterTodosTipos();
+
+    // ----------------------------------------------------
+    // CARD 1: Total do mês atual (efetivados, previstos, total)
+    // ----------------------------------------------------
+    const labelCardMes = document.getElementById("label-card-tipo-mes");
+    const sublabelCardMes = document.getElementById("sublabel-card-tipo-mes");
+    const bodyCardMes = document.getElementById("body-card-tipo-mes");
+
+    if (labelCardMes) {
+        labelCardMes.textContent = isAnoCompleto ? `Mês Atual (${mesAlvo})` : `Mês: ${mesAlvo}`;
+    }
+    if (sublabelCardMes) {
+        sublabelCardMes.textContent = "Efetivados, previstos e total";
+    }
+
+    let totalMesEntradas = { ef: 0, prev: 0, total: 0 };
+    let totalMesSaidas = { ef: 0, prev: 0, total: 0 };
+    const dadosCardMes = [];
+
+    tipos.forEach((tipo, idx) => {
+        let ef = 0;
+        let prev = 0;
+        dadosPivotados.forEach(row => {
+            const t = getTipoFromRow(row).trim();
+            if (t.toLowerCase() === tipo.toLowerCase()) {
+                const dm = row.meses[numMesAlvo] || { valor: 0.0, pago: false };
+                const v = parseFloat(dm.valor) || 0.0;
+                if (boolValue(dm.pago)) ef += v;
+                else prev += v;
+            }
+        });
+        const total = ef + prev;
+        const rgb = obterCorTipoRGB(tipo, idx);
+        const isReceita = tipo.toLowerCase() === "receita";
+
+        if (isReceita) {
+            totalMesEntradas.ef += ef;
+            totalMesEntradas.prev += prev;
+            totalMesEntradas.total += total;
+        } else {
+            totalMesSaidas.ef += ef;
+            totalMesSaidas.prev += prev;
+            totalMesSaidas.total += total;
+        }
+
+        dadosCardMes.push({ tipo, rgb, ef, prev, total, isReceita });
+    });
+
+    if (bodyCardMes) {
+        let html = `
+            <table class="card-tipo-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Tipo</th>
+                        <th class="numeric">Efetivado</th>
+                        <th class="numeric">Previsto</th>
+                        <th class="numeric">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        dadosCardMes.forEach(d => {
+            html += `
+                <tr>
+                    <td style="text-align: left;">
+                        <span class="tipo-badge">
+                            <span class="tipo-badge-dot" style="background-color: rgb(${d.rgb.join(',')});"></span>
+                            ${d.tipo}
+                        </span>
+                    </td>
+                    <td class="numeric">${formatarMoeda(d.ef)}</td>
+                    <td class="numeric" style="color: var(--text-secondary);">${formatarMoeda(d.prev)}</td>
+                    <td class="numeric" style="font-weight: 600;">${formatarMoeda(d.total)}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td style="text-align: left;">
+                            <span class="tipo-badge" style="color: var(--color-receita);">
+                                <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Entradas
+                            </span>
+                        </td>
+                        <td class="numeric" style="color: var(--color-receita);">${formatarMoeda(totalMesEntradas.ef)}</td>
+                        <td class="numeric" style="color: var(--color-receita); opacity: 0.8;">${formatarMoeda(totalMesEntradas.prev)}</td>
+                        <td class="numeric" style="color: var(--color-receita); font-weight: 700;">${formatarMoeda(totalMesEntradas.total)}</td>
+                    </tr>
+                    <tr class="total-row" style="border-top: none;">
+                        <td style="text-align: left;">
+                            <span class="tipo-badge" style="color: var(--color-despesa);">
+                                <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Saídas
+                            </span>
+                        </td>
+                        <td class="numeric" style="color: var(--color-despesa);">${formatarMoeda(totalMesSaidas.ef)}</td>
+                        <td class="numeric" style="color: var(--color-despesa); opacity: 0.8;">${formatarMoeda(totalMesSaidas.prev)}</td>
+                        <td class="numeric" style="color: var(--color-despesa); font-weight: 700;">${formatarMoeda(totalMesSaidas.total)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+        bodyCardMes.innerHTML = html;
+    }
+
+    // ----------------------------------------------------
+    // CARD 2: Média anual efetivada até o mês anterior
+    // Regra: se o mês for janeiro, a média é calculada até dezembro do ano anterior
+    // ----------------------------------------------------
+    const labelCardMediaEfet = document.getElementById("label-card-tipo-media-efetivada");
+    const sublabelCardMediaEfet = document.getElementById("sublabel-card-tipo-media-efetivada");
+    const bodyCardMediaEfet = document.getElementById("body-card-tipo-media-efetivada");
+
+    const isJaneiro = numMesAlvo === 1;
+    let qtdMesesEfet = 0;
+    let descricaoPeriodoEfet = "";
+
+    if (isJaneiro) {
+        qtdMesesEfet = 12;
+        const temDadosAnt = dadosPivotadosAnoAnterior && dadosPivotadosAnoAnterior.length > 0;
+        descricaoPeriodoEfet = temDadosAnt
+            ? `Ano anterior (${anoAtivo - 1}) • 12 meses`
+            : `Ano anterior (${anoAtivo - 1}) • sem lançamentos`;
+    } else {
+        qtdMesesEfet = numMesAlvo - 1;
+        const mesFim = MESES_MAPA[numMesAlvo - 1];
+        descricaoPeriodoEfet = qtdMesesEfet === 1
+            ? `Janeiro (1 mês realizado)`
+            : `Jan a ${mesFim} (${qtdMesesEfet} meses realizados)`;
+    }
+
+    if (labelCardMediaEfet) {
+        labelCardMediaEfet.textContent = "Média Anual Efetivada";
+    }
+    if (sublabelCardMediaEfet) {
+        sublabelCardMediaEfet.textContent = descricaoPeriodoEfet;
+    }
+
+    let mediaEntradasEfet = 0;
+    let mediaSaidasEfet = 0;
+    const dadosCardMediaEfet = [];
+
+    tipos.forEach((tipo, idx) => {
+        let somaEfet = 0;
+        if (isJaneiro) {
+            if (dadosPivotadosAnoAnterior && dadosPivotadosAnoAnterior.length > 0) {
+                dadosPivotadosAnoAnterior.forEach(row => {
+                    const t = (row.tipo || '').trim();
+                    if (t.toLowerCase() === tipo.toLowerCase()) {
+                        for (let m = 1; m <= 12; m++) {
+                            const dm = row.meses[m] || { valor: 0.0, pago: false };
+                            if (boolValue(dm.pago)) somaEfet += parseFloat(dm.valor) || 0.0;
+                        }
+                    }
+                });
+            }
+        } else {
+            dadosPivotados.forEach(row => {
+                const t = getTipoFromRow(row).trim();
+                if (t.toLowerCase() === tipo.toLowerCase()) {
+                    for (let m = 1; m <= qtdMesesEfet; m++) {
+                        const dm = row.meses[m] || { valor: 0.0, pago: false };
+                        if (boolValue(dm.pago)) somaEfet += parseFloat(dm.valor) || 0.0;
+                    }
+                }
+            });
+        }
+
+        const media = qtdMesesEfet > 0 ? somaEfet / qtdMesesEfet : 0;
+        const rgb = obterCorTipoRGB(tipo, idx);
+        const isReceita = tipo.toLowerCase() === "receita";
+
+        if (isReceita) {
+            mediaEntradasEfet += media;
+        } else {
+            mediaSaidasEfet += media;
+        }
+
+        dadosCardMediaEfet.push({ tipo, rgb, media, isReceita });
+    });
+
+    if (bodyCardMediaEfet) {
+        let html = `
+            <table class="card-tipo-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Tipo</th>
+                        <th class="numeric">Média Mensal</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        dadosCardMediaEfet.forEach(d => {
+            html += `
+                <tr>
+                    <td style="text-align: left;">
+                        <span class="tipo-badge">
+                            <span class="tipo-badge-dot" style="background-color: rgb(${d.rgb.join(',')});"></span>
+                            ${d.tipo}
+                        </span>
+                    </td>
+                    <td class="numeric" style="font-weight: 500;">${formatarMoeda(d.media)}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td style="text-align: left;">
+                            <span class="tipo-badge" style="color: var(--color-receita);">
+                                <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Média Entradas
+                            </span>
+                        </td>
+                        <td class="numeric" style="color: var(--color-receita); font-weight: 700;">${formatarMoeda(mediaEntradasEfet)}</td>
+                    </tr>
+                    <tr class="total-row" style="border-top: none;">
+                        <td style="text-align: left;">
+                            <span class="tipo-badge" style="color: var(--color-despesa);">
+                                <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Média Saídas
+                            </span>
+                        </td>
+                        <td class="numeric" style="color: var(--color-despesa); font-weight: 700;">${formatarMoeda(mediaSaidasEfet)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+        bodyCardMediaEfet.innerHTML = html;
+    }
+
+    // ----------------------------------------------------
+    // CARD 3: Média prevista para os meses seguintes
+    // Meses seguintes: (numMesAlvo + 1) até 12
+    // ----------------------------------------------------
+    const labelCardMediaPrev = document.getElementById("label-card-tipo-media-prevista");
+    const sublabelCardMediaPrev = document.getElementById("sublabel-card-tipo-media-prevista");
+    const bodyCardMediaPrev = document.getElementById("body-card-tipo-media-prevista");
+
+    const isDezembro = numMesAlvo === 12;
+    const qtdMesesPrevistos = isDezembro ? 0 : 12 - numMesAlvo;
+    let descricaoPeriodoPrev = "";
+
+    if (isDezembro) {
+        descricaoPeriodoPrev = "Dezembro (sem meses seguintes no ano)";
+    } else {
+        const mesInicio = MESES_MAPA[numMesAlvo + 1];
+        descricaoPeriodoPrev = qtdMesesPrevistos === 1
+            ? `${mesInicio} (1 mês restante)`
+            : `${mesInicio} a Dez (${qtdMesesPrevistos} meses restantes)`;
+    }
+
+    if (labelCardMediaPrev) {
+        labelCardMediaPrev.textContent = "Média Prevista";
+    }
+    if (sublabelCardMediaPrev) {
+        sublabelCardMediaPrev.textContent = descricaoPeriodoPrev;
+    }
+
+    let mediaEntradasPrev = 0;
+    let mediaSaidasPrev = 0;
+    const dadosCardMediaPrev = [];
+
+    tipos.forEach((tipo, idx) => {
+        let somaPrev = 0;
+        if (!isDezembro) {
+            dadosPivotados.forEach(row => {
+                const t = getTipoFromRow(row).trim();
+                if (t.toLowerCase() === tipo.toLowerCase()) {
+                    for (let m = numMesAlvo + 1; m <= 12; m++) {
+                        const dm = row.meses[m] || { valor: 0.0, pago: false };
+                        if (!boolValue(dm.pago)) {
+                            somaPrev += parseFloat(dm.valor) || 0.0;
+                        }
+                    }
+                }
+            });
+        }
+
+        const media = qtdMesesPrevistos > 0 ? somaPrev / qtdMesesPrevistos : 0;
+        const rgb = obterCorTipoRGB(tipo, idx);
+        const isReceita = tipo.toLowerCase() === "receita";
+
+        if (isReceita) {
+            mediaEntradasPrev += media;
+        } else {
+            mediaSaidasPrev += media;
+        }
+
+        dadosCardMediaPrev.push({ tipo, rgb, media, isReceita });
+    });
+
+    if (bodyCardMediaPrev) {
+        let html = `
+            <table class="card-tipo-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Tipo</th>
+                        <th class="numeric">Média Mensal</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        dadosCardMediaPrev.forEach(d => {
+            html += `
+                <tr>
+                    <td style="text-align: left;">
+                        <span class="tipo-badge">
+                            <span class="tipo-badge-dot" style="background-color: rgb(${d.rgb.join(',')});"></span>
+                            ${d.tipo}
+                        </span>
+                    </td>
+                    <td class="numeric" style="font-weight: 500;">${isDezembro ? "—" : formatarMoeda(d.media)}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td style="text-align: left;">
+                            <span class="tipo-badge" style="color: var(--color-receita);">
+                                <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Média Entradas
+                            </span>
+                        </td>
+                        <td class="numeric" style="color: var(--color-receita); font-weight: 700;">${isDezembro ? "—" : formatarMoeda(mediaEntradasPrev)}</td>
+                    </tr>
+                    <tr class="total-row" style="border-top: none;">
+                        <td style="text-align: left;">
+                            <span class="tipo-badge" style="color: var(--color-despesa);">
+                                <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Média Saídas
+                            </span>
+                        </td>
+                        <td class="numeric" style="color: var(--color-despesa); font-weight: 700;">${isDezembro ? "—" : formatarMoeda(mediaSaidasPrev)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+        bodyCardMediaPrev.innerHTML = html;
+    }
+}
+
 function atualizarGraficoMensal(transacoes, anoSelecionado) {
     const canvas = document.getElementById('chart-mensal');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const mesesAbreviados = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-    const dadosPorTipo = {
-        "Receita": { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) },
-        "Despesa": { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) },
-        "Investimento": { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) },
-        "Reserva": { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) }
+    // Agrupamento em 2 barras: Entradas (Receita) e Saídas (Não Receita)
+    const dadosFluxo = {
+        "Entradas": { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) },
+        "Saídas": { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) }
     };
 
     const hoje = new Date();
@@ -1763,10 +2162,8 @@ function atualizarGraficoMensal(transacoes, anoSelecionado) {
     const anoAtualSistema = hoje.getFullYear();
 
     transacoes.forEach(t => {
-        const tipo = t.tipo.trim().charAt(0).toUpperCase() + t.tipo.trim().slice(1).toLowerCase();
-        if (!dadosPorTipo[tipo]) {
-            dadosPorTipo[tipo] = { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) };
-        }
+        const tipoLower = (t.tipo || '').trim().toLowerCase();
+        const fluxo = tipoLower === "receita" ? "Entradas" : "Saídas";
 
         const idxMes = t.mes - 1;
         if (idxMes < 0 || idxMes > 11) return;
@@ -1776,60 +2173,74 @@ function atualizarGraficoMensal(transacoes, anoSelecionado) {
         const isMesPassado = (anoSelecionado < anoAtualSistema) || (anoSelecionado === anoAtualSistema && t.mes < mesAtualSistema);
 
         if (pago) {
-            dadosPorTipo[tipo].efetivado[idxMes] += valor;
+            dadosFluxo[fluxo].efetivado[idxMes] += valor;
         } else if (!isMesPassado) {
-            dadosPorTipo[tipo].previsto[idxMes] += valor;
+            dadosFluxo[fluxo].previsto[idxMes] += valor;
         }
     });
 
+    const configsFluxo = [
+        {
+            chave: "Entradas",
+            label: "Entradas",
+            rgb: CORES_RGB["Receita"] || [0, 158, 115],
+            stack: "entradas"
+        },
+        {
+            chave: "Saídas",
+            label: "Saídas",
+            rgb: CORES_RGB["Despesa"] || [213, 94, 0],
+            stack: "saidas"
+        }
+    ];
+
     const mediasAnuais = {};
-    Object.keys(dadosPorTipo).forEach(tipo => {
+    configsFluxo.forEach(cfg => {
         const valoresMensais = [];
         for (let m = 0; m < 12; m += 1) {
             valoresMensais.push(
-                (dadosPorTipo[tipo].efetivado[m] || 0) + (dadosPorTipo[tipo].previsto[m] || 0)
+                (dadosFluxo[cfg.chave].efetivado[m] || 0) + (dadosFluxo[cfg.chave].previsto[m] || 0)
             );
         }
-        mediasAnuais[tipo] = calcularMediaTipo(valoresMensais, tipoMediaMensal);
+        mediasAnuais[cfg.chave] = calcularMediaTipo(valoresMensais, tipoMediaMensal);
     });
 
     const datasets = [];
-    let colorIdx = 0;
 
-    Object.keys(dadosPorTipo).forEach(tipo => {
-        const rgb = obterCorTipoRGB(tipo, colorIdx++);
+    configsFluxo.forEach(cfg => {
+        const rgb = cfg.rgb;
         const corEfetivado = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 1.0)`;
         const corPrevisto = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.35)`;
 
         datasets.push({
             type: 'bar',
-            label: `${tipo} (Efetivado)`,
-            data: dadosPorTipo[tipo].efetivado,
+            label: `${cfg.label} (Efetivado)`,
+            data: dadosFluxo[cfg.chave].efetivado,
             backgroundColor: corEfetivado,
             borderColor: corEfetivado,
             borderWidth: 1,
-            stack: tipo,
+            stack: cfg.stack,
             barPercentage: 0.8,
             categoryPercentage: 0.8
         });
 
         datasets.push({
             type: 'bar',
-            label: `${tipo} (Previsto)`,
-            data: dadosPorTipo[tipo].previsto,
+            label: `${cfg.label} (Previsto)`,
+            data: dadosFluxo[cfg.chave].previsto,
             backgroundColor: corPrevisto,
             borderColor: corEfetivado,
             borderWidth: 1,
             borderDash: [2, 2],
-            stack: tipo,
+            stack: cfg.stack,
             barPercentage: 0.8,
             categoryPercentage: 0.8
         });
 
         datasets.push({
             type: 'line',
-            label: `${MEDIA_LABELS[tipoMediaMensal] || "Média Anual"} ${tipo}`,
-            data: Array(12).fill(mediasAnuais[tipo]),
+            label: `${MEDIA_LABELS[tipoMediaMensal] || "Média Anual"} ${cfg.label}`,
+            data: Array(12).fill(mediasAnuais[cfg.chave]),
             borderColor: corEfetivado,
             borderWidth: 2,
             borderDash: [5, 5],
@@ -1860,7 +2271,33 @@ function atualizarGraficoMensal(transacoes, anoSelecionado) {
                         font: { family: 'Outfit', size: 12 },
                         filter: function(item) {
                             return !item.text.includes('(Previsto)');
+                        },
+                        generateLabels: function(chart) {
+                            const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                            return original.map(item => {
+                                if (item.text.includes(' (Efetivado)')) {
+                                    item.text = item.text.replace(' (Efetivado)', '');
+                                }
+                                return item;
+                            });
                         }
+                    },
+                    onClick: function(e, legendItem, legend) {
+                        const chart = legend.chart;
+                        const text = legendItem.text;
+                        if (text === "Entradas" || text.includes("Entradas")) {
+                            const isHidden = !chart.isDatasetVisible(0);
+                            chart.setDatasetVisibility(0, isHidden);
+                            chart.setDatasetVisibility(1, isHidden);
+                        } else if (text === "Saídas" || text.includes("Saídas")) {
+                            const isHidden = !chart.isDatasetVisible(3);
+                            chart.setDatasetVisibility(3, isHidden);
+                            chart.setDatasetVisibility(4, isHidden);
+                        } else {
+                            const index = legendItem.datasetIndex;
+                            chart.setDatasetVisibility(index, !chart.isDatasetVisible(index));
+                        }
+                        chart.update();
                     }
                 },
                 tooltip: {
@@ -2051,8 +2488,8 @@ let investmentDeviationChart = null;
 let investmentSuggestions = [];
 
 const GROUP_COLORS = [
-    "#2ecc71", "#3498db", "#f1c40f", "#e74c3c",
-    "#00d2d3", "#ff7f50", "#9b59b6", "#95a5a6"
+    "#0072b2", "#d55e00", "#009e73", "#e69f00",
+    "#56b4e9", "#cc79a7", "#f0e442", "#999999"
 ];
 
 function initInvestments() {
@@ -2153,7 +2590,7 @@ function renderInvestmentPortfolio() {
         if (portfolioYield !== null && portfolioYield !== undefined) {
             const signal = portfolioYield >= 0 ? "+" : "";
             yieldEl.textContent = `${signal}${formatNumber(portfolioYield, 2)}%`;
-            yieldEl.style.color = portfolioYield >= 0 ? "#2ecc71" : "#e74c3c";
+            yieldEl.style.color = portfolioYield >= 0 ? "var(--color-receita, #009e73)" : "var(--color-despesa, #d55e00)";
             yieldEl.title = `Custo total: ${formatarMoeda(metrics.total_cost || 0)}`;
         } else {
             yieldEl.textContent = "";
@@ -2167,7 +2604,7 @@ function renderInvestmentPortfolio() {
         if (deltaLatest !== null && deltaLatest !== undefined) {
             const signal = deltaLatest >= 0 ? "+" : "";
             deltaLatestEl.textContent = `${signal}${formatNumber(deltaLatest, 2)}% (vs. anterior)`;
-            deltaLatestEl.style.color = deltaLatest >= 0 ? "#2ecc71" : "#e74c3c";
+            deltaLatestEl.style.color = deltaLatest >= 0 ? "var(--color-receita, #009e73)" : "var(--color-despesa, #d55e00)";
         } else {
             deltaLatestEl.textContent = "";
         }
@@ -2245,7 +2682,7 @@ function renderDeviationChart(assets) {
             ctx.lineTo(x, yScale.bottom);
             ctx.lineWidth = 2;
             ctx.setLineDash([6, 4]);
-            ctx.strokeStyle = "var(--color-despesa, #ff4757)";
+            ctx.strokeStyle = "var(--text-secondary, #95a5a6)";
             ctx.stroke();
             ctx.restore();
         }
@@ -2591,30 +3028,30 @@ function renderizarEvolucao() {
                     label: "Yield (%)",
                     yAxisID: "yYield",
                     data: dados.map(d => (d.yield === null || d.yield === undefined ? null : d.yield)),
-                    borderColor: "#f39c12",
-                    backgroundColor: "rgba(243, 156, 18, 0.15)",
+                    borderColor: "#e69f00",
+                    backgroundColor: "rgba(230, 159, 0, 0.15)",
                     fill: true,
                     tension: 0.3,
                     borderWidth: 2,
                     pointRadius: mostrarPontos ? 4 : 0,
                     pointHoverRadius: 6,
-                    pointBackgroundColor: "#f39c12",
-                    pointBorderColor: "#f39c12",
+                    pointBackgroundColor: "#e69f00",
+                    pointBorderColor: "#e69f00",
                     pointBorderWidth: 0
                 },
                 {
                     label: "Patrimônio",
                     yAxisID: "yPatrimonio",
                     data: dados.map(d => d.value),
-                    borderColor: "#2ecc71",
-                    backgroundColor: "rgba(46, 204, 113, 0.25)",
+                    borderColor: "#0072b2",
+                    backgroundColor: "rgba(0, 114, 178, 0.25)",
                     fill: true,
                     tension: 0.3,
                     borderWidth: 2,
                     pointRadius: mostrarPontos ? 4 : 0,
                     pointHoverRadius: 6,
-                    pointBackgroundColor: "#2ecc71",
-                    pointBorderColor: "#2ecc71",
+                    pointBackgroundColor: "#0072b2",
+                    pointBorderColor: "#0072b2",
                     pointBorderWidth: 0
                 }
             ]
@@ -2782,7 +3219,7 @@ function renderizarYieldDetails(details) {
         if (item.yield_percent !== null && item.yield_percent !== undefined) {
             const signal = item.yield_percent >= 0 ? "+" : "";
             tdYield.textContent = `${signal}${formatNumber(item.yield_percent, 2)}%`;
-            tdYield.style.color = item.yield_percent >= 0 ? "#2ecc71" : "#e74c3c";
+            tdYield.style.color = item.yield_percent >= 0 ? "var(--color-receita, #009e73)" : "var(--color-despesa, #d55e00)";
             tdYield.style.fontWeight = "600";
         } else {
             tdYield.textContent = "-";
@@ -3573,23 +4010,23 @@ function renderGraficoCategoriaComparativo(canvas, data) {
     const labels = categories.map(c => c.categoria);
     const desvios = categories.map(c => c.desvio || 0);
 
-    // Cores: despesa = verde/vermelho; outros = amarelo
+    // Cores: despesa = verde-azulado se economia / vermelhão se estouro; outros = cinza neutro
     const cores = categories.map(c => {
         const d = c.desvio || 0;
         const isDespesa = c.tipoNome && c.tipoNome.toLowerCase() === "despesa";
         if (isDespesa) {
-            return d < 0 ? "rgba(46, 204, 113, 0.7)" : "rgba(231, 76, 60, 0.7)";
+            return d < 0 ? "rgba(0, 158, 115, 0.7)" : "rgba(213, 94, 0, 0.7)";
         } else {
-            return "rgba(241, 196, 15, 0.7)";
+            return "rgba(149, 165, 166, 0.7)";
         }
     });
     const bordas = categories.map(c => {
         const d = c.desvio || 0;
         const isDespesa = c.tipoNome && c.tipoNome.toLowerCase() === "despesa";
         if (isDespesa) {
-            return d < 0 ? "rgba(46, 204, 113, 1)" : "rgba(231, 76, 60, 1)";
+            return d < 0 ? "rgba(0, 158, 115, 1)" : "rgba(213, 94, 0, 1)";
         } else {
-            return "rgba(241, 196, 15, 1)";
+            return "rgba(149, 165, 166, 1)";
         }
     });
     // Guarda dados das categorias para usar no tooltip
