@@ -52,8 +52,16 @@ O delta % do **Saldo Total do Ano Projetado** é calculado em relação ao **Sal
 #### Gráfico de Evolução Mensal
 
 - Posicionado **acima das métricas**, logo após os controles de navegação.
-- Exibe receitas, despesas, investimentos e reservas mês a mês para o ano selecionado.
-- Linha de média por tipo com seletor de cálculo: **Média (12 meses)** (somatório ÷ 12), **Sem min/máx** (descarta o menor e o maior valor do ano e divide por 10 — **padrão**) ou **Mediana** (média dos dois valores centrais dos 12 meses).
+- Exibição focada em **2 barras por mês**: **Entradas** (Receitas) e **Saídas** (consolidando Despesas, Investimentos e Reservas), simplificando a leitura visual e evitando sobrecarga.
+- Linha de média histórica com seletor de cálculo: **Sem min/máx** (descarta o menor e o maior valor do ano e divide por 10 — **padrão**), **Média (12 meses)** ou **Mediana**.
+
+#### Cards de Resumo por Tipo
+
+Posicionados logo abaixo do gráfico mensal, fornecem uma visão detalhada para cada um dos 4 tipos (Receita, Despesa, Investimento e Reserva):
+
+- **Mês Atual**: detalhamento dos valores **Efetivados**, **Previstos** e **Total** do mês corrente.
+- **Média Anual Efetivada**: média mensal realizada do ano até o mês anterior (em janeiro, espelha o valor de janeiro para base imediata).
+- **Média Anual Prevista**: média projetada para os meses seguintes até o fechamento do ano em dezembro.
 
 #### Filtros e Controles
 
@@ -78,17 +86,18 @@ Todos os filtros e ações ficam na mesma barra, acima da tabela:
 
 #### Detalhamento Econômico
 
-Abaixo da tabela, com gráficos de:
+Abaixo da tabela, com gráficos focados em hierarquia visual pré-atentiva:
 
-- **Proporção por Categoria** (barras horizontais, com categorias ordenadas por valor decrescente e eixo X suprimido para evitar poluição visual).
-- **Ranking de Itens** (barras horizontais, com eixo X suprimido).
+- **Proporção por Categoria** (barras horizontais ordenadas por valor decrescente, eixo X suprimido e percentual exibido diretamente na barra principal para leitura imediata sem ruído).
+- **Ranking de Itens** (barras horizontais, eixo X suprimido e percentual destacado na maior barra).
 - Filtro para exibir apenas valores efetivados.
 - Seletor de tipo a explodir (Receita, Despesa, Investimento ou Reserva).
 
 #### Gráfico Categorias: Meta vs % Remuneração e Desvio
 
 - Barras horizontais por categoria, comparando o percentual gasto sobre a remuneração com a meta configurada (desvio em pontos percentuais, com os tipos de despesa à frente dos demais).
-- Tooltip com as informações na ordem: **Desvio**, **Total** (valor e % da remuneração) e **Meta**.
+- Design calmo e limpo, sem marcadores de alerta ou variações de espessura que poluam o gráfico.
+- Tooltip informativo estruturado com: **Desvio**, **Total** (valor e % da remuneração) e **Meta**.
 
 #### Outras Funcionalidades
 
@@ -130,8 +139,10 @@ A área da carteira possui uma leve variação visual (fundo sutilmente azulado 
 
 #### Gráfico de Desvio da Meta
 
-- Barras horizontais coloridas pela cor do grupo, sem bordas.
-- Linha vertical no zero.
+- Barras horizontais coloridas pela cor do grupo do ativo, sem bordas decorativas.
+- Delimitação com áreas visuais de fundo sutis para **Subalocado** (desvio negativo) e **Sobrealocado** (desvio positivo).
+- Indicadores informativos das zonas posicionados no topo do card para não sobrepor as barras dos ativos.
+- Linha vertical de referência no zero.
 
 #### Evolução da Carteira
 
@@ -170,6 +181,49 @@ Página acessada pelo botão **Gerenciar Carteira** no subtítulo da área de in
 - Geração de análise da carteira via IA (OpenAI, Anthropic, Gemini ou DeepSeek) com base nos ativos e metas de alocação.
 - **Caixa de diálogo opcional**: o usuário pode escrever uma pergunta (ex.: qual ativo priorizar no próximo aporte) que é adicionada ao prompt padrão da IA.
 - Se a caixa estiver vazia, o insight é gerado apenas com o prompt padrão.
+
+---
+
+## 🎨 Sistema de Design — "Papel & Tinta"
+
+A interface adota o conceito **Minimalismo Calmo** (codinome **"Papel & Tinta"**): a página se comporta como papel — fundo neutro, texto como tinta e **cor apenas quando carrega significado**. A hierarquia visual vem de **espaço, tipografia e alinhamento**, e não de sombras, bordas espessas ou gradientes.
+
+### Princípios Fundamentais
+
+- **Silêncio visual**: eliminação total de *glassmorphism*, `backdrop-filter: blur` e sombras pesadas (`box-shadow: none`). O padrão é silencioso para que os dados mereçam o destaque.
+- **Hierarquia por espaço e tipografia**: leitura fluida estruturada em ritmo vertical e alinhamento consistente.
+- **Cor com propósito**: 
+  - O azul (`--accent`) é reservado exclusivamente ao foco acessível (`:focus-visible`) e controles de formulário (`accent-color`), nunca preenchendo botões.
+  - As únicas cores vivas da tela são as **cores funcionais dos dados financeiros** (paleta acessível **Okabe-Ito**).
+- **Tipografia nativa do sistema**: uso direto de `system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` com base `15px` e `line-height: 1.55`. Zero dependência de fontes externas como Google Fonts, garantindo carregamento instantâneo e máxima nitidez.
+- **Ações discretas**: botões de alternar tema, editar e excluir operam como ícones fantasma que ganham presença apenas no *hover*.
+- **Navegação em trilho e pílula**: abas (`.subtitle-tabs`, `.tabs-header`, `.period-filter`) com trilho suave (`--soft`) e pílula ativa em papel (`--bg`) com texto escuro/claro contrastante.
+
+### Design Tokens
+
+| Token | Claro | Escuro | Uso |
+|---|---|---|---|
+| `--bg` | `#fafbfc` | `#0f1115` | Papel de fundo e pílula ativa das abas |
+| `--text` | `#1f2328` | `#e6e8eb` | Tinta principal |
+| `--muted` | `#6b7280` | `#9aa4b2` | Texto secundário, rótulos e ícones fantasma |
+| `--soft` | `#f1f3f5` | `#1b1f26` | Superfícies calmas (campos, trilhos de abas, botões de ação) |
+| `--soft-hover` | `#e9ecef` | `#232833` | Estado de *hover* de superfícies |
+| `--border` | `#e6e8eb` | `#262b33` | Hairline border sutil (1px) |
+| `--accent` | `#2f6feb` | `#5b9bff` | Foco acessível e controles nativos |
+| `--code-bg` / `--code-fg` | `#f6f8fa` / `#24292f` | `#14171d` / `#e6e8eb` | Superfície e tinta mono de resultados |
+| `--error` | `#b42318` | `#ff8a80` | Mensagens e alertas de erro |
+| `--toast-bg` / `--toast-fg` | `#1f2328` / `#f6f8fa` | `#e6e8eb` / `#14171d` | Notificações toast e tooltips |
+
+### Cores Semânticas Financeiras (Okabe-Ito)
+
+As cores dos dados financeiros seguem a paleta universal e acessível de Okabe-Ito, preservando contraste inclusive para usuários com daltonismo:
+
+| Tipo | Hexadecimal | RGB | Significado |
+|---|---|---|---|
+| **Receita** | `#009e73` | `rgb(0, 158, 115)` | Entradas financeiras e saldo positivo |
+| **Despesa** | `#d55e00` | `rgb(213, 94, 0)` | Saídas de gastos e desvios desfavoráveis |
+| **Investimento**| `#0072b2` | `rgb(0, 114, 178)` | Alocações patrimoniais e subalocação |
+| **Reserva** | `#f0e442` | `rgb(240, 228, 66)` | Reservas de emergência e oportunidade |
 
 ---
 
@@ -237,7 +291,7 @@ Observações:
 - **Banco**: SQLite.
 - **Autenticação**: bcrypt, pyotp, Google OAuth.
 - **Finanças/mercado**: yfinance.
-- **Frontend**: HTML5, CSS customizado, JavaScript, Chart.js, FontAwesome.
+- **Frontend**: HTML5 semântico, CSS customizado (Tokens do Sistema Papel & Tinta), JavaScript Vanilla, Tipografia nativa do sistema (`system-ui`), Chart.js, FontAwesome.
 - **Dependências**: uv.
 - **Testes**: pytest.
 

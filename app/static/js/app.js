@@ -768,9 +768,11 @@ function inicializarTema() {
     const btnTheme = document.getElementById("btn-theme-toggle");
     if (temaSalvo === "claro") {
         document.body.classList.add("light-theme");
+        document.documentElement.setAttribute("data-theme", "light");
         if (btnTheme) btnTheme.innerHTML = '<i class="fa-solid fa-sun"></i>';
     } else {
         document.body.classList.remove("light-theme");
+        document.documentElement.setAttribute("data-theme", "dark");
         if (btnTheme) btnTheme.innerHTML = '<i class="fa-solid fa-moon"></i>';
     }
 }
@@ -779,10 +781,12 @@ function alternarTema() {
     const btnTheme = document.getElementById("btn-theme-toggle");
     if (document.body.classList.contains("light-theme")) {
         document.body.classList.remove("light-theme");
+        document.documentElement.setAttribute("data-theme", "dark");
         localStorage.setItem("tema", "escuro");
         if (btnTheme) btnTheme.innerHTML = '<i class="fa-solid fa-moon"></i>';
     } else {
         document.body.classList.add("light-theme");
+        document.documentElement.setAttribute("data-theme", "light");
         localStorage.setItem("tema", "claro");
         if (btnTheme) btnTheme.innerHTML = '<i class="fa-solid fa-sun"></i>';
     }
@@ -1703,11 +1707,15 @@ const CORES_EXTRAS_RGB = [
 ];
 
 function corTextoTema() {
-    return getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#f1f1f5';
+    return getComputedStyle(document.body).getPropertyValue('--text').trim()
+        || getComputedStyle(document.body).getPropertyValue('--text-primary').trim()
+        || '#1f2328';
 }
 
 function corTextoSecundarioTema() {
-    return getComputedStyle(document.body).getPropertyValue('--text-secondary').trim() || '#9090a2';
+    return getComputedStyle(document.body).getPropertyValue('--muted').trim()
+        || getComputedStyle(document.body).getPropertyValue('--text-secondary').trim()
+        || '#6b7280';
 }
 
 function gerarCoresCategoriasDistintas(rgbBase, quantidade) {
@@ -2270,7 +2278,7 @@ function atualizarGraficoMensal(transacoes, anoSelecionado) {
                     position: 'top',
                     labels: {
                         color: corTextoTema(),
-                        font: { family: 'Outfit', size: 12 },
+                        font: { family: 'system-ui, sans-serif', size: 12 },
                         filter: function(item) {
                             return !item.text.includes('(Previsto)');
                         },
@@ -2321,13 +2329,13 @@ function atualizarGraficoMensal(transacoes, anoSelecionado) {
                 x: {
                     stacked: true,
                     grid: { color: 'rgba(128, 128, 128, 0.15)' },
-                    ticks: { color: corTextoSecundarioTema(), font: { family: 'Outfit' } }
+                    ticks: { color: corTextoSecundarioTema(), font: { family: 'system-ui, sans-serif' } }
                 },
                 y: {
                     grid: { color: 'rgba(128, 128, 128, 0.15)' },
                     ticks: {
                         color: corTextoSecundarioTema(),
-                        font: { family: 'Outfit' },
+                        font: { family: 'system-ui, sans-serif' },
                         callback: function(value) {
                             return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
                         }
@@ -2409,7 +2417,7 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
 
             const pct = ((val / total) * 100).toFixed(1) + '%';
             ctx.save();
-            ctx.font = '600 11px Outfit, sans-serif';
+            ctx.font = '600 11px system-ui, sans-serif';
             ctx.fillStyle = corTextoTema();
             ctx.textBaseline = 'middle';
             ctx.fillText(pct, bar.x + 8, bar.y);
@@ -2456,7 +2464,7 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
                 },
                 y: {
                     grid: { display: false },
-                    ticks: { color: corTextoTema(), font: { family: 'Outfit', size: 12 } }
+                    ticks: { color: corTextoTema(), font: { family: 'system-ui, sans-serif', size: 12 } }
                 }
             }
         },
@@ -2489,7 +2497,7 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
 
             const pct = ((val / total) * 100).toFixed(1) + '%';
             ctx.save();
-            ctx.font = '600 11px Outfit, sans-serif';
+            ctx.font = '600 11px system-ui, sans-serif';
             ctx.fillStyle = corTextoTema();
             ctx.textBaseline = 'middle';
             ctx.fillText(pct, bar.x + 8, bar.y);
@@ -2536,7 +2544,7 @@ function atualizarGraficosDetalhamento(transacoes, tipoSelecionado, apenasPagos,
                 },
                 y: {
                     grid: { display: false },
-                    ticks: { color: corTextoTema(), font: { family: 'Outfit', size: 12 } }
+                    ticks: { color: corTextoTema(), font: { family: 'system-ui, sans-serif', size: 12 } }
                 }
             }
         },
@@ -3092,7 +3100,7 @@ function renderizarEvolucao() {
         canvas.height = Math.max(1, Math.round(rect.height * dpr));
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, rect.width, rect.height);
-        ctx.font = "14px Outfit, sans-serif";
+        ctx.font = "14px system-ui, sans-serif";
         ctx.fillStyle = corTextoSecundarioTema();
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -3125,7 +3133,7 @@ function renderizarEvolucao() {
             const lastPatrVal = dados[lastIdx].value;
 
             ctxChart.save();
-            ctxChart.font = "bold 11px Outfit, sans-serif";
+            ctxChart.font = "bold 11px system-ui, sans-serif";
 
             // Label Patrimônio (Azul #0072b2)
             if (lastPatrVal !== null && lastPatrVal !== undefined) {
@@ -3223,7 +3231,7 @@ function renderizarEvolucao() {
             plugins: {
                 legend: {
                     position: "top",
-                    labels: { color: textColor, font: { family: "Outfit", size: 12 } }
+                    labels: { color: textColor, font: { family: "system-ui, sans-serif", size: 12 } }
                 },
                 tooltip: {
                     mode: "index",
@@ -4154,7 +4162,7 @@ function renderGraficoCategoriaComparativo(canvas, data) {
                         grid: { color: "rgba(128, 128, 128, 0.15)" },
                         ticks: {
                             color: corTextoSecundarioTema(),
-                            font: { family: "Outfit" },
+                            font: { family: "system-ui, sans-serif" },
                             callback: function(value) {
                                 return value.toFixed(1) + "pp";
                             }
@@ -4164,7 +4172,7 @@ function renderGraficoCategoriaComparativo(canvas, data) {
                         grid: { display: false },
                         ticks: {
                             color: corTextoSecundarioTema(),
-                            font: { family: "Outfit" }
+                            font: { family: "system-ui, sans-serif" }
                         }
                     }
                 }
@@ -4242,7 +4250,7 @@ function renderGraficoCategoriaComparativo(canvas, data) {
                     grid: { color: "rgba(128, 128, 128, 0.15)" },
                     ticks: {
                         color: corTextoSecundarioTema(),
-                        font: { family: "Outfit" },
+                        font: { family: "system-ui, sans-serif" },
                         callback: function(value) {
                             return (value >= 0 ? "+" : "") + value.toFixed(1) + "pp";
                         }
@@ -4252,7 +4260,7 @@ function renderGraficoCategoriaComparativo(canvas, data) {
                     grid: { display: false },
                     ticks: {
                         color: corTextoTema(),
-                        font: { family: "Outfit", size: 12 }
+                        font: { family: "system-ui, sans-serif", size: 12 }
                     }
                 }
             }
