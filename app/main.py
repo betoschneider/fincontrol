@@ -115,6 +115,7 @@ def _definir_cookie_sessao(request: Request, response: Response, session_token: 
 _ORIGENS_PADRAO = {
     "https://betoschneider.com",
     "https://financeiro.betoschneider.com",
+    "https://fincontrol.betoschneider.com",
     "http://localhost:8520",
 }
 
