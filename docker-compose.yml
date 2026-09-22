@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: controle_financeiro_app
+    container_name: fincontrol_app
     ports:
       - "8520:8520"
     # .env é opcional: sem ele o app sobe com os padrões (Google OAuth oculto,

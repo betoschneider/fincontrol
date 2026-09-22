@@ -1,4 +1,4 @@
-# RedeFin
+# FinControl
 
 **Controle Financeiro e Balanceador de Carteira de Investimentos**
 
@@ -13,7 +13,7 @@ O projeto usa **FastAPI**, **SQLAlchemy**, **SQLite**, **Alembic** e frontend em
 
 ## 📄 Licença e Origem
 
-O RedeFin é **software livre**: você pode **copiar, modificar e redistribuir** o projeto livremente, inclusive para uso comercial, sob a licença **MIT** (ver arquivo [`LICENSE`](LICENSE)).
+O FinControl é **software livre**: você pode **copiar, modificar e redistribuir** o projeto livremente, inclusive para uso comercial, sob a licença **MIT** (ver arquivo [`LICENSE`](LICENSE)).
 
 > **Nota de origem**: este projeto nasceu de uma **necessidade pessoal** de gestão financeira e foi criado via **vibe coding** — não é produto de empresa ou organização. Use, adapte e distribua como quiser.
 
@@ -352,7 +352,7 @@ pip install uv
 Execute os comandos a partir da raiz do projeto:
 
 ```bash
-cd redefin
+cd fincontrol
 ```
 
 ### 3. Instalar dependências

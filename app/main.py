@@ -250,7 +250,7 @@ def reset_user_password(db: Session, user: User, new_password: str) -> User:
     return user
 
 
-app = FastAPI(title="Controle Financeiro")
+app = FastAPI(title="FinControl")
 
 app.add_middleware(
     CORSMiddleware,
@@ -350,7 +350,7 @@ def register(
     user = create_user(db, username, user_in.password)
     totp = pyotp.TOTP(user.totp_secret)
     totp_uri = totp.provisioning_uri(
-        name=user.username, issuer_name="ControleFinanceiro"
+        name=user.username, issuer_name="FinControl"
     )
     # totp_secret é gerado uma única vez no cadastro e devolvido aqui apenas
     # para o setup do 2FA (QR/manual). Trate-o como uso único: não é

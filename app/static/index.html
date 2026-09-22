@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google OAuth Client ID -->
     <meta name="google-client-id" content="796797603259-gi07j7mmpdoo0fau7s6nnaqb8kk54pqf.apps.googleusercontent.com">
-    <title>RedeFin</title>
+    <title>FinControl</title>
     <!-- Favicon -->
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
@@ -15,7 +15,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Versão dos assets para cache-busting: incremente manualmente ao deploy (ex: v1 -> v2) -->
-    <link rel="stylesheet" href="css/style.css?v=43">
+    <link rel="stylesheet" href="css/style.css?v=45">
 </head>
 
 <body>
@@ -99,7 +99,7 @@
                     <h2><i class="fa-solid fa-user-plus"></i> Novo Cadastro</h2>
                 </div>
                 <div class="modal-body">
-                    <p>Crie uma conta para acessar o RedeFin.</p>
+                    <p>Crie uma conta para acessar o FinControl.</p>
                     <div class="input-group">
                         <label for="register-username">E-mail</label>
                         <input type="email" id="register-username" placeholder="seu@email.com">
@@ -108,10 +108,14 @@
                         <label for="register-password">Senha</label>
                         <input type="password" id="register-password" placeholder="Defina uma senha">
                     </div>
+                    <div class="input-group">
+                        <label for="register-password-confirm">Confirmar Senha</label>
+                        <input type="password" id="register-password-confirm" placeholder="Repita a senha">
+                    </div>
                     <div id="register-error" class="error-msg hidden"></div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn-register-submit" class="btn btn-primary btn-block">Registrar</button>
+                    <button id="btn-register-submit" class="btn btn-primary btn-block" disabled>Registrar</button>
                     <div class="auth-links">
                         <a href="#" id="link-register-back">Voltar para o Login</a>
                     </div>
@@ -160,10 +164,14 @@
                         <label for="reset-new-password">Nova Senha</label>
                         <input type="password" id="reset-new-password" placeholder="Sua nova senha">
                     </div>
+                    <div class="input-group">
+                        <label for="reset-new-password-confirm">Confirmar Nova Senha</label>
+                        <input type="password" id="reset-new-password-confirm" placeholder="Repita a nova senha">
+                    </div>
                     <div id="reset-error" class="error-msg hidden"></div>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn-reset-submit" class="btn btn-primary btn-block">Salvar Nova Senha</button>
+                    <button id="btn-reset-submit" class="btn btn-primary btn-block" disabled>Salvar Nova Senha</button>
                     <div class="auth-links">
                         <a href="#" id="link-reset-back">Voltar para o Login</a>
                     </div>
@@ -178,7 +186,7 @@
         <header class="app-header glass">
             <div class="header-logo">
                 <i class="fa-solid fa-chart-line logo-icon"></i>
-                <h1>RedeFin</h1>
+                <h1>FinControl</h1>
             </div>
 
             <div class="header-controls">
@@ -905,7 +913,7 @@
     </div>
 
     <!-- Scripts da Aplicação -->
-    <script src="js/app.js?v=43"></script>
+    <script src="js/app.js?v=45"></script>
 </body>
 
 </html>

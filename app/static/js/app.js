@@ -164,6 +164,9 @@ function configurarEventListeners() {
     document.getElementById("register-password").addEventListener("keydown", (e) => {
         if (e.key === "Enter") realizarCadastro();
     });
+    document.getElementById("register-password-confirm").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") realizarCadastro();
+    });
 
     document.getElementById("btn-setup-2fa-done").addEventListener("click", () => {
         showAuthScreen("auth-login-step1");
@@ -173,6 +176,13 @@ function configurarEventListeners() {
     document.getElementById("reset-new-password").addEventListener("keydown", (e) => {
         if (e.key === "Enter") realizarRedefinicaoSenha();
     });
+    document.getElementById("reset-new-password-confirm").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") realizarRedefinicaoSenha();
+    });
+
+    // Só libera o envio quando a senha e a confirmação coincidem
+    configurarConfirmacaoSenha("register-password", "register-password-confirm", "btn-register-submit");
+    configurarConfirmacaoSenha("reset-new-password", "reset-new-password-confirm", "btn-reset-submit");
 
     // Links de navegação dentro do modal
     document.getElementById("link-go-register").addEventListener("click", (e) => {
@@ -426,6 +436,30 @@ function showAuthScreen(screenId) {
     document.getElementById(screenId).classList.remove("hidden");
 }
 
+// --- Confirmação de senha -------------------------------------------------
+// Compara senha e confirmação (ambas preenchidas) para habilitar o envio.
+function senhasConferem(senhaId, confirmacaoId) {
+    const senha = document.getElementById(senhaId);
+    const confirmacao = document.getElementById(confirmacaoId);
+    if (!senha || !confirmacao) return false;
+    return senha.value.length > 0 && senha.value === confirmacao.value;
+}
+
+function atualizarBotaoConfirmacaoSenha(botaoId, senhaId, confirmacaoId) {
+    const botao = document.getElementById(botaoId);
+    if (botao) botao.disabled = !senhasConferem(senhaId, confirmacaoId);
+}
+
+function configurarConfirmacaoSenha(senhaId, confirmacaoId, botaoId) {
+    const senha = document.getElementById(senhaId);
+    const confirmacao = document.getElementById(confirmacaoId);
+    if (!senha || !confirmacao) return;
+    const atualizar = () => atualizarBotaoConfirmacaoSenha(botaoId, senhaId, confirmacaoId);
+    senha.addEventListener("input", atualizar);
+    confirmacao.addEventListener("input", atualizar);
+    atualizar();
+}
+
 // Verifica se está logado (cookie HttpOnly não é legível via JS: consulta o servidor)
 async function verificarAutenticacao() {
     try {
@@ -546,15 +580,21 @@ async function realizarLoginStep2() {
 async function realizarCadastro() {
     const username = document.getElementById("register-username").value.trim();
     const password = document.getElementById("register-password").value;
+    const confirmPassword = document.getElementById("register-password-confirm").value;
     const errorEl = document.getElementById("register-error");
     
-    if (!username || !password) {
+    if (!username || !password || !confirmPassword) {
         errorEl.textContent = "Preencha todos os campos.";
         errorEl.classList.remove("hidden");
         return;
     }
     if (password.length < 8) {
         errorEl.textContent = "A senha deve ter no mínimo 8 caracteres.";
+        errorEl.classList.remove("hidden");
+        return;
+    }
+    if (password !== confirmPassword) {
+        errorEl.textContent = "As senhas não coincidem.";
         errorEl.classList.remove("hidden");
         return;
     }
@@ -580,6 +620,8 @@ async function realizarCadastro() {
             // Limpa formulário
             document.getElementById("register-username").value = "";
             document.getElementById("register-password").value = "";
+            document.getElementById("register-password-confirm").value = "";
+            atualizarBotaoConfirmacaoSenha("btn-register-submit", "register-password", "register-password-confirm");
         } else {
             errorEl.textContent = data.detail || "Erro ao criar conta de usuário.";
             errorEl.classList.remove("hidden");
@@ -598,15 +640,21 @@ async function realizarRedefinicaoSenha() {
     const username = document.getElementById("reset-username").value.trim();
     const code = document.getElementById("reset-otp").value.trim();
     const new_password = document.getElementById("reset-new-password").value;
+    const confirmNewPassword = document.getElementById("reset-new-password-confirm").value;
     const errorEl = document.getElementById("reset-error");
     
-    if (!username || !code || !new_password) {
+    if (!username || !code || !new_password || !confirmNewPassword) {
         errorEl.textContent = "Preencha todos os campos.";
         errorEl.classList.remove("hidden");
         return;
     }
     if (new_password.length < 8) {
         errorEl.textContent = "A nova senha deve ter no mínimo 8 caracteres.";
+        errorEl.classList.remove("hidden");
+        return;
+    }
+    if (new_password !== confirmNewPassword) {
+        errorEl.textContent = "As senhas não coincidem.";
         errorEl.classList.remove("hidden");
         return;
     }
@@ -629,6 +677,8 @@ async function realizarRedefinicaoSenha() {
             document.getElementById("reset-username").value = "";
             document.getElementById("reset-otp").value = "";
             document.getElementById("reset-new-password").value = "";
+            document.getElementById("reset-new-password-confirm").value = "";
+            atualizarBotaoConfirmacaoSenha("btn-reset-submit", "reset-new-password", "reset-new-password-confirm");
         } else {
             errorEl.textContent = data.detail || "Dados incorretos ou código 2FA inválido.";
             errorEl.classList.remove("hidden");

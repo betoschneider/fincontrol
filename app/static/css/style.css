@@ -91,8 +91,13 @@
 }
 
 /* Estilos Adicionais de Autenticação */
+/* Empilha cabeçalho, corpo e rodapé com o mesmo respiro do modal, evitando
+   que o último input fique colado no botão de ação. */
 .auth-screen {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .auth-links {
@@ -258,6 +263,14 @@ body {
 
 .btn-block {
     width: 100%;
+}
+
+/* Botões bloqueados (ex.: confirmação de senha pendente) */
+.btn:disabled,
+.btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .btn-xs {
@@ -1231,7 +1244,9 @@ body.investment-mode .app-header {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.45);
+    /* Camada opaca no tom do "papel": esconde completamente as seções da
+       aplicação enquanto a autenticação é exibida. */
+    background-color: var(--bg);
     z-index: 1000;
     display: flex;
     align-items: center;
