@@ -15,7 +15,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Versão dos assets para cache-busting: incremente manualmente ao deploy (ex: v1 -> v2) -->
-    <link rel="stylesheet" href="css/style.css?v=45">
+    <link rel="stylesheet" href="css/style.css?v=46">
 </head>
 
 <body>
@@ -375,7 +375,7 @@
 
                         <!-- Filtros Tipo e Categoria -->
                         <div
-                            style="display: flex; gap: 8px; align-items: center; border-left: 1px solid var(--border-color); padding-left: 12px; margin-left: 4px;">
+                            style="display: flex; gap: 12px; align-items: center; border-left: 1px solid var(--border-color); padding-left: 12px; margin-left: 4px;">
                             <div class="control-group">
                                 <label for="filter-tipo" style="font-size: 12px;">Tipo:</label>
                                 <select id="filter-tipo" class="custom-select"
@@ -393,6 +393,13 @@
                                     style="padding: 4px 8px; font-size: 12px; max-width: 150px;">
                                     <option value="Todas">Todas</option>
                                 </select>
+                            </div>
+                            <div class="control-group switch-group" style="margin-left: 4px;">
+                                <label class="switch-container" title="Ocultar registros com valores já efetivados e mostrar apenas pendentes">
+                                    <input type="checkbox" id="check-ocultar-efetivados" class="switch-input" checked>
+                                    <span class="switch-slider"></span>
+                                    <span class="switch-text">Ocultar efetivados</span>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -913,7 +920,7 @@
     </div>
 
     <!-- Scripts da Aplicação -->
-    <script src="js/app.js?v=45"></script>
+    <script src="js/app.js?v=46"></script>
 </body>
 
 </html>

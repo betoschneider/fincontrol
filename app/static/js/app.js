@@ -14,6 +14,7 @@ const LISTA_MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Se
 // // Estado Global da SPA
 let anoAtivo = new Date().getFullYear();
 let mesFiltrado = "Ano Completo";
+let ocultarEfetivadosAtivo = true; // Por padrão, oculta itens já efetivados
 let dadosPivotados = []; // Estrutura: [{ item, tipo, categoria, meses: {1: {valor, pago}, 2: ...} }]
 let dadosPivotadosAnoAnterior = []; // Dados do ano anterior para comparativo
 let apenasPagosDetalhe = true;
@@ -42,6 +43,7 @@ const inputUploadCsv = document.getElementById("input-upload-csv");
 
 const filterTipo = document.getElementById("filter-tipo");
 const filterCategoria = document.getElementById("filter-categoria");
+const checkOcultarEfetivados = document.getElementById("check-ocultar-efetivados");
 
 const loadingOverlay = document.getElementById("loading-overlay");
 
@@ -124,6 +126,13 @@ function configurarEventListeners() {
     if (filterCategoria) {
         filterCategoria.addEventListener("change", (e) => {
             filtroCategoriaAtiva = e.target.value;
+            renderizarTabelas();
+        });
+    }
+
+    if (checkOcultarEfetivados) {
+        checkOcultarEfetivados.addEventListener("change", (e) => {
+            ocultarEfetivadosAtivo = e.target.checked;
             renderizarTabelas();
         });
     }
@@ -1284,10 +1293,52 @@ function renderizarTabelaEdicao() {
     });
 
     const dadosFiltrados = dadosOrdenados.filter(row => {
+        // Linhas novas adicionadas pelo usuário nunca são ocultadas
+        if (row.isNew) return true;
+
         const tipoRow = getTipoFromRow(row);
         const matchTipo = filtroTipoAtivo === "Todos" || tipoRow === filtroTipoAtivo;
         const matchCategoria = filtroCategoriaAtiva === "Todas" || row.categoria === filtroCategoriaAtiva;
-        return matchTipo && matchCategoria;
+        if (!matchTipo || !matchCategoria) return false;
+
+        // Filtro para ocultar registros com valores já efetivados
+        if (ocultarEfetivadosAtivo) {
+            if (mesFiltrado !== "Ano Completo") {
+                const numMes = MAPA_REVERSO_MES[mesFiltrado];
+                const dadosMes = row.meses[numMes];
+                // Se no mês filtrado este item já estiver efetivado (pago: true), oculta
+                if (boolValue(dadosMes?.pago)) {
+                    return false;
+                }
+            } else {
+                // Selecionando Ano Completo:
+                // O item é ocultado apenas se já tiver ao menos um valor efetivado
+                // e NÃO tiver nenhum mês com lançamento pendente de efetivação.
+                // Se em algum mês houver item não efetivado com valor, ele permanece visível.
+                let temAlgumEfetivado = false;
+                let temPendenteComValor = false;
+
+                for (let m = 1; m <= 12; m++) {
+                    const dm = row.meses[m];
+                    const valor = parseFloat(dm?.valor);
+                    const temValor = !isNaN(valor) && valor !== 0 && dm?.valor !== null && dm?.valor !== undefined;
+                    const pago = boolValue(dm?.pago);
+
+                    if (pago) {
+                        temAlgumEfetivado = true;
+                    }
+                    if (!pago && temValor) {
+                        temPendenteComValor = true;
+                    }
+                }
+
+                if (temAlgumEfetivado && !temPendenteComValor) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     });
 
     // 2. Preenche o corpo
