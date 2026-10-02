@@ -1722,12 +1722,25 @@ body.investment-mode .app-header {
     cursor: pointer;
 }
 
-/* Cards de Resumo por Tipo (Mês Atual, Média Efetivada, Média Prevista) */
+/* Cards de Resumo por Tipo (Mês Atual, Total Anual, Média Efetivada, Média Prevista) */
+/* Mês Atual e Total Anual são mais largos (têm 4 colunas de dados); as médias, mais estreitas. */
 .cards-tipos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
     gap: 20px;
     margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+    .cards-tipos-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .cards-tipos-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .card-tipo-detalhe {

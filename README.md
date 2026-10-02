@@ -57,11 +57,12 @@ O delta % do **Saldo Total do Ano Projetado** é calculado em relação ao **Sal
 
 #### Cards de Resumo por Tipo
 
-Posicionados logo abaixo do gráfico mensal, fornecem uma visão detalhada para cada um dos 4 tipos (Receita, Despesa, Investimento e Reserva):
+Posicionados logo abaixo do gráfico mensal, fornecem uma visão detalhada para cada um dos 4 tipos (Receita, Despesa, Investimento e Reserva) acompanhados do consolidado de Entradas, Saídas e Saldo no rodapé. A ordem e a largura são: **Mês Atual** e **Total Anual** (mais largos, com colunas Tipo, Efetivado, Previsto e Total), seguidos de **Média Efetivada** e **Média Prevista** (mais estreitos).
 
 - **Mês Atual**: detalhamento dos valores **Efetivados**, **Previstos** e **Total** do mês corrente.
-- **Média Anual Efetivada**: média mensal realizada do ano até o mês anterior (em janeiro, espelha o valor de janeiro para base imediata).
-- **Média Anual Prevista**: média projetada para os meses seguintes até o fechamento do ano em dezembro.
+- **Total Anual**: detalhamento dos valores **Efetivados**, **Previstos** e **Total** considerando os 12 meses do ano ativo. **Não é afetado pelo filtro de mês.**
+- **Média Efetivada**: média mensal realizada do ano até o mês anterior (em janeiro, espelha o valor de janeiro para base imediata).
+- **Média Prevista**: média projetada para os meses seguintes até o fechamento do ano em dezembro.
 
 #### Filtros e Controles
 

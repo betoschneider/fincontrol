@@ -233,8 +233,7 @@
             <div class="chart-card glass main-chart-card">
                 <h3><i class="fa-solid fa-chart-column"></i> Evolução Mensal de Lançamentos
                     <select id="select-media-mensal" class="custom-select chart-media-select"
-                        aria-label="Cálculo da média por tipo"
-                        title="Cálculo da linha de média por tipo">
+                        aria-label="Cálculo da média por tipo" title="Cálculo da linha de média por tipo">
                         <option value="media">Média (12 meses)</option>
                         <option value="sem_minmax" selected>Sem min/máx</option>
                         <option value="mediana">Mediana</option>
@@ -246,44 +245,66 @@
             </div>
         </section>
 
-        <!-- Cards de Resumo por Tipo (Mês Atual, Média Efetivada, Média Prevista) -->
+        <!-- Cards de Resumo por Tipo (Mês Atual, Total Anual, Média Efetivada, Média Prevista) -->
         <section class="cards-tipos-grid financial-only" id="section-cards-tipos">
             <!-- Card 1: Total do Mês Atual (Efetivados, Previstos e Total) -->
             <div class="metric-card glass card-tipo-detalhe" id="card-tipo-mes-atual">
                 <div class="card-tipo-header">
                     <div class="card-tipo-header-title">
-                        <div class="metric-icon income" style="width:38px;height:38px;font-size:16px;"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div class="metric-icon income" style="width:38px;height:38px;font-size:16px;"><i
+                                class="fa-solid fa-calendar-day"></i></div>
                         <div>
                             <span class="metric-label" id="label-card-tipo-mes">Lançamentos do Mês</span>
-                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-mes">Efetivados, previstos e total</span>
+                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-mes">Efetivados, previstos e
+                                total</span>
                         </div>
                     </div>
                 </div>
                 <div class="card-tipo-body" id="body-card-tipo-mes"></div>
             </div>
 
-            <!-- Card 2: Média Anual Efetivada até o Mês Anterior -->
+            <!-- Card 2: Total Anual (Efetivados, Previstos e Total) -->
+            <div class="metric-card glass card-tipo-detalhe" id="card-tipo-total-anual">
+                <div class="card-tipo-header">
+                    <div class="card-tipo-header-title">
+                        <div class="metric-icon income-year" style="width:38px;height:38px;font-size:16px;"><i
+                                class="fa-solid fa-calendar-days"></i></div>
+                        <div>
+                            <span class="metric-label" id="label-card-tipo-total-anual">Total Anual</span>
+                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-total-anual">Efetivados, previstos e
+                                total</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-tipo-body" id="body-card-tipo-total-anual"></div>
+            </div>
+
+            <!-- Card 3: Média Efetivada até o Mês Anterior -->
             <div class="metric-card glass card-tipo-detalhe" id="card-tipo-media-efetivada">
                 <div class="card-tipo-header">
                     <div class="card-tipo-header-title">
-                        <div class="metric-icon income-year" style="width:38px;height:38px;font-size:16px;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div class="metric-icon income-year" style="width:38px;height:38px;font-size:16px;"><i
+                                class="fa-solid fa-clock-rotate-left"></i></div>
                         <div>
-                            <span class="metric-label" id="label-card-tipo-media-efetivada">Média Anual Efetivada</span>
-                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-media-efetivada">Até o mês anterior</span>
+                            <span class="metric-label" id="label-card-tipo-media-efetivada">Média Efetivada</span>
+                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-media-efetivada">Até o mês
+                                anterior</span>
                         </div>
                     </div>
                 </div>
                 <div class="card-tipo-body" id="body-card-tipo-media-efetivada"></div>
             </div>
 
-            <!-- Card 3: Média Prevista para os Meses Seguintes -->
+            <!-- Card 4: Média Prevista para os Meses Seguintes -->
             <div class="metric-card glass card-tipo-detalhe" id="card-tipo-media-prevista">
                 <div class="card-tipo-header">
                     <div class="card-tipo-header-title">
-                        <div class="metric-icon projection" style="width:38px;height:38px;font-size:16px;"><i class="fa-solid fa-forward"></i></div>
+                        <div class="metric-icon projection" style="width:38px;height:38px;font-size:16px;"><i
+                                class="fa-solid fa-forward"></i></div>
                         <div>
                             <span class="metric-label" id="label-card-tipo-media-prevista">Média Prevista</span>
-                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-media-prevista">Meses seguintes</span>
+                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-media-prevista">Meses
+                                seguintes</span>
                         </div>
                     </div>
                 </div>
@@ -291,43 +312,6 @@
             </div>
         </section>
 
-        <!-- Dashboard Metrics -->
-        <section class="metrics-grid financial-only">
-            <!-- Card 1: Saldo Projetado do mês atual -->
-            <div class="metric-card glass" id="card-saldo-projetado">
-                <div class="metric-icon projection"><i class="fa-solid fa-calculator"></i></div>
-                <div class="metric-info">
-                    <span class="metric-label" id="label-saldo-projetado">Saldo Projetado</span>
-                    <h2 class="metric-value" id="val-saldo-projetado">R$ 0,00</h2>
-                    <span id="val-saldo-projetado-delta" class="metric-delta" title=""></span>
-                </div>
-            </div>
-            <!-- Card 2: Saldo Efetivo do mês atual -->
-            <div class="metric-card glass" id="card-saldo-atual">
-                <div class="metric-icon income"><i class="fa-solid fa-wallet"></i></div>
-                <div class="metric-info">
-                    <span class="metric-label" id="label-saldo-atual">Saldo Efetivo</span>
-                    <h2 class="metric-value" id="val-saldo-atual">R$ 0,00</h2>
-                </div>
-            </div>
-            <!-- Card 3: Saldo Total do Ano Projetado -->
-            <div class="metric-card glass" id="card-saldo-ano-projetado">
-                <div class="metric-icon projection-year"><i class="fa-solid fa-chart-line"></i></div>
-                <div class="metric-info">
-                    <span class="metric-label">Saldo Total do Ano Projetado</span>
-                    <h2 class="metric-value" id="val-saldo-ano-projetado">R$ 0,00</h2>
-                    <span id="val-saldo-ano-projetado-delta" class="metric-delta" title=""></span>
-                </div>
-            </div>
-            <!-- Card 4: Saldo Total do Ano Efetivo -->
-            <div class="metric-card glass" id="card-saldo-ano-efetivo">
-                <div class="metric-icon income-year"><i class="fa-solid fa-calendar-check"></i></div>
-                <div class="metric-info">
-                    <span class="metric-label">Saldo Total do Ano Efetivo</span>
-                    <h2 class="metric-value" id="val-saldo-ano-efetivo">R$ 0,00</h2>
-                </div>
-            </div>
-        </section>
 
         <!-- Tabs Navigation -->
         <div class="tabs-container">
@@ -395,7 +379,8 @@
                                 </select>
                             </div>
                             <div class="control-group switch-group" style="margin-left: 4px;">
-                                <label class="switch-container" title="Ocultar registros com valores já efetivados e mostrar apenas pendentes">
+                                <label class="switch-container"
+                                    title="Ocultar registros com valores já efetivados e mostrar apenas pendentes">
                                     <input type="checkbox" id="check-ocultar-efetivados" class="switch-input" checked>
                                     <span class="switch-slider"></span>
                                     <span class="switch-text">Ocultar efetivados</span>
@@ -437,7 +422,8 @@
                             <span class="metric-label">Patrimônio Total</span>
                             <h2 class="metric-value" id="inv-total">R$ 0,00</h2>
                             <span id="inv-total-yield" class="metric-delta" style="font-size:0.9rem;" title=""></span>
-                            <span id="inv-total-delta-latest" class="metric-delta" style="font-size:0.9rem;" title=""></span>
+                            <span id="inv-total-delta-latest" class="metric-delta" style="font-size:0.9rem;"
+                                title=""></span>
                         </div>
                     </div>
                     <div class="metric-card glass">
@@ -501,8 +487,10 @@
                     <div class="chart-card-header-with-zones">
                         <h3><i class="fa-solid fa-chart-bar"></i> Desvio da Meta</h3>
                         <div class="inv-deviation-zones-header">
-                            <span class="zone-tag subalocado"><i class="fa-solid fa-arrow-left"></i> Subalocado (comprar)</span>
-                            <span class="zone-tag sobrealocado">Sobrealocado (aguardar) <i class="fa-solid fa-arrow-right"></i></span>
+                            <span class="zone-tag subalocado"><i class="fa-solid fa-arrow-left"></i> Subalocado
+                                (comprar)</span>
+                            <span class="zone-tag sobrealocado">Sobrealocado (aguardar) <i
+                                    class="fa-solid fa-arrow-right"></i></span>
                         </div>
                     </div>
                     <div class="chart-container investment-chart-container">
@@ -656,7 +644,8 @@
                             <i class="fa-solid fa-upload"></i> Importar
                         </button>
                         <input type="file" id="input-upload-csv" accept=".csv" class="hidden">
-                        <button id="btn-settings-voltar" class="btn btn-secondary" title="Voltar para Controle Financeiro">
+                        <button id="btn-settings-voltar" class="btn btn-secondary"
+                            title="Voltar para Controle Financeiro">
                             <i class="fa-solid fa-arrow-left"></i> Voltar
                         </button>
                     </div>

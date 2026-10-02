@@ -54,7 +54,7 @@ function inicializarSeletores() {
     const anoAtual = new Date().getFullYear();
     const anoSeguinte = anoAtual + 1;
     selectAno.innerHTML = "";
-    
+
     // Janela inicial de anos de forma decrescente (antes do fetch do BD)
     const anosOpcoes = [anoSeguinte, anoAtual];
     anosOpcoes.forEach(ano => {
@@ -83,7 +83,7 @@ function configurarEventListeners() {
 
     selectMes.addEventListener("change", (e) => {
         mesFiltrado = e.target.value;
-        
+
         // Exibe ou esconde o botão de propagação conforme filtro de mês
         if (mesFiltrado === "Ano Completo") {
             btnPropagar.classList.add("hidden");
@@ -91,7 +91,7 @@ function configurarEventListeners() {
             btnPropagar.classList.remove("hidden");
             btnPropagar.textContent = `✨ Preencher meses seguintes a ${mesFiltrado}`;
         }
-        
+
         renderizarTabelas();
         atualizarMetricas();
         atualizarGraficos();
@@ -271,21 +271,21 @@ function ativarAba(tabId) {
     const tabBtns = document.querySelectorAll(".subtitle-tabs .tab-btn");
     tabBtns.forEach(b => b.classList.remove("active"));
     document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-    
+
     // Ativa o botão correspondente
     const btn = document.querySelector(`.subtitle-tabs .tab-btn[data-tab="${tabId}"]`);
     if (btn) btn.classList.add("active");
-    
+
     // Ativa o conteúdo
     document.getElementById(tabId).classList.add("active");
     document.body.classList.toggle("investment-mode", tabId === "tab-carteira" || tabId === "tab-carteira-gerenciar");
     document.body.classList.toggle("settings-mode", tabId === "tab-configuracoes" || tabId === "tab-perfil");
-    
+
     // Mostra/esconde os controles do subtítulo conforme a aba
     document.getElementById("subtitle-right-controle")?.classList.toggle("hidden", tabId !== "tab-editar");
     document.getElementById("subtitle-right-carteira")?.classList.toggle("hidden", tabId !== "tab-carteira");
     document.getElementById("subtitle-right-config")?.classList.toggle("hidden", tabId !== "tab-perfil");
-    
+
     // Re-renderiza para garantir a consistência das tabelas
     if (tabId === "tab-carteira") {
         if (typeof window.onInvestmentTabActivated === "function") {
@@ -401,7 +401,7 @@ function atualizarBotaoGoogle() {
 
     const btnContent = document.getElementById('google-btn-content');
     const profilePic = document.getElementById('google-profile-pic');
-    
+
     // Tenta carregar a foto do perfil do cache localStorage (salva no último login)
     const savedPic = localStorage.getItem('google_profile_pic');
     if (savedPic) {
@@ -507,7 +507,7 @@ async function realizarLoginStep1() {
     const username = document.getElementById("login-username").value.trim();
     const password = document.getElementById("login-password").value;
     const errorEl = document.getElementById("login-step1-error");
-    
+
     if (!username || !password) {
         errorEl.textContent = "Preencha todos os campos.";
         errorEl.classList.remove("hidden");
@@ -545,7 +545,7 @@ async function realizarLoginStep1() {
 async function realizarLoginStep2() {
     const code = document.getElementById("login-otp").value.trim();
     const errorEl = document.getElementById("login-step2-error");
-    
+
     if (!code || code.length !== 6) {
         errorEl.textContent = "Insira o código de 6 dígitos.";
         errorEl.classList.remove("hidden");
@@ -564,12 +564,12 @@ async function realizarLoginStep2() {
         if (response.ok) {
             errorEl.classList.add("hidden");
             authModal.classList.remove("active");
-            
+
             // Limpa campos
             document.getElementById("login-username").value = "";
             document.getElementById("login-password").value = "";
             document.getElementById("login-otp").value = "";
-            
+
             atualizarVisibilidadeBotoes();
             carregarDadosDoAno();
         } else {
@@ -591,7 +591,7 @@ async function realizarCadastro() {
     const password = document.getElementById("register-password").value;
     const confirmPassword = document.getElementById("register-password-confirm").value;
     const errorEl = document.getElementById("register-error");
-    
+
     if (!username || !password || !confirmPassword) {
         errorEl.textContent = "Preencha todos os campos.";
         errorEl.classList.remove("hidden");
@@ -619,13 +619,13 @@ async function realizarCadastro() {
         const data = await response.json();
         if (response.ok) {
             errorEl.classList.add("hidden");
-            
+
             // Exibe a tela de configuração 2FA com QR Code
             document.getElementById("setup-secret-key").value = data.totp_secret;
             document.getElementById("setup-qr-img").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.totp_uri)}`;
-            
+
             showAuthScreen("auth-setup-2fa");
-            
+
             // Limpa formulário
             document.getElementById("register-username").value = "";
             document.getElementById("register-password").value = "";
@@ -651,7 +651,7 @@ async function realizarRedefinicaoSenha() {
     const new_password = document.getElementById("reset-new-password").value;
     const confirmNewPassword = document.getElementById("reset-new-password-confirm").value;
     const errorEl = document.getElementById("reset-error");
-    
+
     if (!username || !code || !new_password || !confirmNewPassword) {
         errorEl.textContent = "Preencha todos os campos.";
         errorEl.classList.remove("hidden");
@@ -681,7 +681,7 @@ async function realizarRedefinicaoSenha() {
             errorEl.classList.add("hidden");
             alert("Senha redefinida com sucesso! Prossiga com o login.");
             showAuthScreen("auth-login-step1");
-            
+
             // Limpa formulário
             document.getElementById("reset-username").value = "";
             document.getElementById("reset-otp").value = "";
@@ -1077,11 +1077,11 @@ function criarSelectCategoria(idxOriginal, catAtual) {
 // Transforma a lista plana em formato pivotado estruturado
 function processarEPivotarDados(transacoes) {
     const mapa = {};
-    
+
     transacoes.forEach(t => {
         // Chave de agrupamento base: Item, Tipo, Categoria
         const chave = `${t.item.trim()}|||${t.tipo.trim()}|||${t.categoria.trim()}`;
-        
+
         if (!mapa[chave]) {
             const cat = t.categoria.trim();
             const tipoDerivado = getTipoNomeFromCategoria(cat) || t.tipo.trim();
@@ -1097,7 +1097,7 @@ function processarEPivotarDados(transacoes) {
                 mapa[chave].meses[m] = { valor: 0.0, pago: false };
             }
         }
-        
+
         // Atribui o valor do respectivo mês
         if (t.mes >= 1 && t.mes <= 12) {
             mapa[chave].meses[t.mes] = {
@@ -1114,12 +1114,12 @@ function processarEPivotarDados(transacoes) {
 function popularSeletorTipoDetalhe() {
     // Prioriza tipos do dropdown (cadastrados na tabela tipos)
     let tiposDisponiveis = getTiposOptions();
-    
+
     // Se vazio, usa os tipos derivados das categorias nos dados pivotados
     if (tiposDisponiveis.length === 0) {
         tiposDisponiveis = [...new Set(dadosPivotados.map(d => getTipoFromRow(d)).filter(t => t.trim() !== ""))];
     }
-    
+
     selectTipoDetalhe.innerHTML = "";
 
     if (tiposDisponiveis.length === 0) {
@@ -1135,7 +1135,7 @@ function popularSeletorTipoDetalhe() {
         }
         selectTipoDetalhe.appendChild(option);
     });
-    
+
     if (!tiposDisponiveis.includes(tipoDetalheSelecionado)) {
         tipoDetalheSelecionado = tiposDisponiveis[0];
     }
@@ -1168,15 +1168,15 @@ function atualizarFiltroTipoOpcoes() {
 function atualizarFiltroCategoriaOpcoes() {
     const selectFiltroCat = document.getElementById("filter-categoria");
     if (!selectFiltroCat) return;
-    
+
     // Prioriza categorias do dropdown (cadastradas na tabela categorias)
     let categorias = getCategoriasOptions();
-    
+
     // Se vazio, usa as categorias presentes nos dados pivotados
     if (categorias.length === 0) {
         categorias = [...new Set(dadosPivotados.map(d => d.categoria).filter(c => c.trim() !== ""))];
     }
-    
+
     selectFiltroCat.innerHTML = '<option value="Todas">Todas</option>';
     categorias.forEach(cat => {
         const opt = document.createElement("option");
@@ -1187,7 +1187,7 @@ function atualizarFiltroCategoriaOpcoes() {
         }
         selectFiltroCat.appendChild(opt);
     });
-    
+
     if (!categorias.includes(filtroCategoriaAtiva)) {
         filtroCategoriaAtiva = "Todas";
         selectFiltroCat.value = "Todas";
@@ -1204,13 +1204,13 @@ function renderizarTabelaEdicao() {
     const tabela = document.getElementById("tabela-edicao");
     const thead = tabela.querySelector("thead");
     const tbody = tabela.querySelector("tbody");
-    
+
     thead.innerHTML = "";
     tbody.innerHTML = "";
 
     // 1. Cria Cabeçalho
     const headerRow = document.createElement("tr");
-    
+
     // Colunas fixas
     const thAcoes = document.createElement("th");
     thAcoes.innerHTML = '<i class="fa-solid fa-gear"></i>';
@@ -1345,7 +1345,7 @@ function renderizarTabelaEdicao() {
     dadosFiltrados.forEach((row, idx) => {
         // Encontra o index real no array original dadosPivotados
         const idxOriginal = dadosPivotados.findIndex(d => d === row);
-        
+
         const tr = document.createElement("tr");
 
         // Aplica classe de cor baseada no Tipo derivado da categoria
@@ -1395,7 +1395,7 @@ function renderizarTabelaEdicao() {
             inputVal.type = "number";
             inputVal.step = "0.01";
             inputVal.className = "cell-input cell-input-number";
-            
+
             // Exibir vazio se o valor for null ou undefined (em branco)
             const valorExibido = (dadosMes.valor === null || dadosMes.valor === undefined) ? "" : (dadosMes.valor === 0 ? "0.00" : dadosMes.valor.toFixed(2));
             inputVal.value = valorExibido;
@@ -1443,15 +1443,15 @@ function adicionarLinha() {
         meses: {},
         isNew: true
     };
-    
+
     // Inicializa meses com valor nulo (em branco) e pago=false
     for (let m = 1; m <= 12; m++) {
         novaLinha.meses[m] = { valor: null, pago: false };
     }
-    
+
     dadosPivotados.push(novaLinha);
     renderizarTabelas();
-    
+
     // Rola a tabela de edição para o topo para facilitar visualização
     setTimeout(() => {
         const container = document.querySelector("#tab-editar .table-container");
@@ -1472,7 +1472,7 @@ function excluirLinha(index) {
 // Propagar valores do mês ativo para os meses seguintes
 function propagarValores() {
     if (mesFiltrado === "Ano Completo") return;
-    
+
     const numMesOrigem = MAPA_REVERSO_MES[mesFiltrado];
     if (!numMesOrigem || numMesOrigem === 12) {
         alert("Não é possível propagar a partir de Dezembro.");
@@ -1486,7 +1486,7 @@ function propagarValores() {
     let alterados = 0;
     dadosPivotados.forEach(row => {
         const valorOrigem = parseFloat(row.meses[numMesOrigem].valor) || 0.0;
-        
+
         if (valorOrigem > 0) {
             // Varre meses futuros (numMesOrigem + 1 até 12)
             for (let m = numMesOrigem + 1; m <= 12; m++) {
@@ -1510,163 +1510,8 @@ function propagarValores() {
     }
 }
 
-// Atualiza os painéis de métrica (Saldo Atual, Saldo Projetado e totais do ano)
+// Atualiza os painéis de métrica e cards de resumo
 function atualizarMetricas() {
-    const mesAtualNome = MESES_MAPA[new Date().getMonth() + 1];
-    const isAnoCompleto = mesFiltrado === "Ano Completo";
-    const mesAlvo = isAnoCompleto ? mesAtualNome : mesFiltrado;
-    const numMesAlvo = MAPA_REVERSO_MES[mesAlvo];
-
-    document.getElementById("label-saldo-atual").textContent = `${isAnoCompleto ? 'Mês atual' : mesAlvo}: Saldo Efetivo`;
-    document.getElementById("label-saldo-projetado").textContent = `${isAnoCompleto ? 'Mês atual' : mesAlvo}: Saldo Projetado`;
-
-    // --- Cards do mês atual ---
-    let totalReceitaAtual = 0;
-    let totalNaoReceitaAtual = 0;
-    let totalReceitaProjetado = 0;
-    let totalNaoReceitaProjetado = 0;
-
-    dadosPivotados.forEach(row => {
-        const dadosMes = row.meses[numMesAlvo] || { valor: 0.0, pago: false };
-        const valor = parseFloat(dadosMes.valor) || 0.0;
-        const pago = boolValue(dadosMes.pago);
-        const tipo = getTipoFromRow(row).toLowerCase();
-
-        if (pago) {
-            if (tipo === "receita") totalReceitaAtual += valor;
-            else totalNaoReceitaAtual += valor;
-        }
-
-        if (tipo === "receita") totalReceitaProjetado += valor;
-        else totalNaoReceitaProjetado += valor;
-    });
-
-    const saldoAtual = totalReceitaAtual - totalNaoReceitaAtual;
-    const saldoProjetado = totalReceitaProjetado - totalNaoReceitaProjetado;
-
-    const valAtualEl = document.getElementById("val-saldo-atual");
-    const valProjEl = document.getElementById("val-saldo-projetado");
-
-    valAtualEl.textContent = formatarMoeda(saldoAtual);
-    valProjEl.textContent = formatarMoeda(saldoProjetado);
-    ajustarCorMetrica(valAtualEl, saldoAtual);
-    ajustarCorMetrica(valProjEl, saldoProjetado);
-
-    // Delta % do Saldo Projetado do mês vs mês anterior
-    const deltaEl = document.getElementById('val-saldo-projetado-delta');
-    if (isAnoCompleto && deltaEl) {
-        let numMesPrev = numMesAlvo - 1;
-        if (numMesPrev < 1) numMesPrev = 12;
-
-        let prevReceita = 0, prevNaoReceita = 0;
-        dadosPivotados.forEach(row => {
-            const dadosPrev = row.meses[numMesPrev] || { valor: 0.0, pago: false };
-            const v = parseFloat(dadosPrev.valor) || 0.0;
-            const tipo = row.tipo.trim().toLowerCase();
-            if (tipo === 'receita') prevReceita += v;
-            else prevNaoReceita += v;
-        });
-        const prevProjetado = prevReceita - prevNaoReceita;
-        let percent = null;
-        if (Math.abs(prevProjetado) > 0.0001) {
-            percent = ((saldoProjetado - prevProjetado) / Math.abs(prevProjetado)) * 100;
-        }
-        if (percent === null) {
-            deltaEl.textContent = '—';
-            deltaEl.title = `Comparado ao saldo projetado do mês anterior: ${formatarMoeda(prevProjetado)}`;
-            deltaEl.classList.remove('positive', 'negative');
-        } else {
-            const seta = percent >= 0 ? '▲ ' : '▼ ';
-            deltaEl.textContent = `${seta}${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
-            deltaEl.title = `Comparado ao saldo projetado do mês anterior: ${formatarMoeda(prevProjetado)}\nAtual: ${formatarMoeda(saldoProjetado)} • Diferença: ${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%`;
-            deltaEl.classList.remove('positive', 'negative');
-            deltaEl.classList.add(percent >= 0 ? 'positive' : 'negative');
-        }
-    } else if (deltaEl) {
-        deltaEl.textContent = '';
-        deltaEl.title = '';
-        deltaEl.classList.remove('positive', 'negative');
-    }
-
-    // --- Cards Saldo Total do Ano (ignoram filtro de Mês) ---
-    let anoReceitaProj = 0, anoNaoReceitaProj = 0;
-    let anoReceitaEfet = 0, anoNaoReceitaEfet = 0;
-
-    dadosPivotados.forEach(row => {
-        const tipo = getTipoFromRow(row).toLowerCase();
-        for (let m = 1; m <= 12; m++) {
-            const dm = row.meses[m] || { valor: 0.0, pago: false };
-            const v = parseFloat(dm.valor) || 0.0;
-            const pago = boolValue(dm.pago);
-
-            if (tipo === 'receita') anoReceitaProj += v;
-            else anoNaoReceitaProj += v;
-
-            if (pago) {
-                if (tipo === 'receita') anoReceitaEfet += v;
-                else anoNaoReceitaEfet += v;
-            }
-        }
-    });
-
-    const saldoAnoProj = anoReceitaProj - anoNaoReceitaProj;
-    const saldoAnoEfet = anoReceitaEfet - anoNaoReceitaEfet;
-
-    const valAnoProjEl = document.getElementById('val-saldo-ano-projetado');
-    const valAnoEfetEl = document.getElementById('val-saldo-ano-efetivo');
-
-    if (valAnoProjEl) {
-        valAnoProjEl.textContent = formatarMoeda(saldoAnoProj);
-        ajustarCorMetrica(valAnoProjEl, saldoAnoProj);
-    }
-    if (valAnoEfetEl) {
-        valAnoEfetEl.textContent = formatarMoeda(saldoAnoEfet);
-        ajustarCorMetrica(valAnoEfetEl, saldoAnoEfet);
-    }
-
-    // Delta % do Saldo Total do Ano Projetado vs Saldo Total do Ano Efetivo do ano anterior
-    const deltaAnoEl = document.getElementById('val-saldo-ano-projetado-delta');
-    if (deltaAnoEl) {
-        if (dadosPivotadosAnoAnterior.length === 0) {
-            deltaAnoEl.textContent = '';
-            deltaAnoEl.title = '';
-            deltaAnoEl.classList.remove('positive', 'negative');
-        } else {
-            // Calcula Saldo Total Efetivo do ano anterior
-            let antReceitaEfet = 0, antNaoReceitaEfet = 0;
-            dadosPivotadosAnoAnterior.forEach(row => {
-                const tipo = row.tipo.trim().toLowerCase();
-                for (let m = 1; m <= 12; m++) {
-                    const dm = row.meses[m] || { valor: 0.0, pago: false };
-                    const v = parseFloat(dm.valor) || 0.0;
-                    if (boolValue(dm.pago)) {
-                        if (tipo === 'receita') antReceitaEfet += v;
-                        else antNaoReceitaEfet += v;
-                    }
-                }
-            });
-            const saldoAntEfet = antReceitaEfet - antNaoReceitaEfet;
-
-            let percentAno = null;
-            if (Math.abs(saldoAntEfet) > 0.0001) {
-                percentAno = ((saldoAnoProj - saldoAntEfet) / Math.abs(saldoAntEfet)) * 100;
-            }
-
-            if (percentAno === null) {
-                deltaAnoEl.textContent = '—';
-                deltaAnoEl.title = `Comparado ao Saldo Total Efetivo de ${anoAtivo - 1}: ${formatarMoeda(saldoAntEfet)}`;
-                deltaAnoEl.classList.remove('positive', 'negative');
-            } else {
-                const setaAno = percentAno >= 0 ? '▲ ' : '▼ ';
-                deltaAnoEl.textContent = `${setaAno}${percentAno >= 0 ? '+' : ''}${percentAno.toFixed(1)}% vs ${anoAtivo - 1}`;
-                deltaAnoEl.title = `Saldo Total do Ano Projetado (${anoAtivo}) comparado ao Saldo Total Efetivo de ${anoAtivo - 1}\nAno anterior efetivo: ${formatarMoeda(saldoAntEfet)}\nEste ano projetado: ${formatarMoeda(saldoAnoProj)}\nVariação: ${percentAno >= 0 ? '+' : ''}${percentAno.toFixed(1)}%`;
-                deltaAnoEl.classList.remove('positive', 'negative');
-                deltaAnoEl.classList.add(percentAno >= 0 ? 'positive' : 'negative');
-            }
-        }
-    }
-
-    // Atualiza os cards contendo todos os tipos de lançamentos
     atualizarCardsTipos();
 }
 
@@ -1685,7 +1530,7 @@ async function salvarDadosServidor() {
     exibirLoading(true);
     try {
         const transacoesPlanas = [];
-        
+
         dadosPivotados.forEach(row => {
             // Deriva o tipo da categoria sempre antes de salvar
             const tipoParaSalvar = getTipoFromRow(row);
@@ -1696,7 +1541,7 @@ async function salvarDadosServidor() {
                 for (let m = 1; m <= 12; m++) {
                     const dadosMes = row.meses[m] || { valor: null, pago: false };
                     const valorSalvo = (dadosMes.valor === null || dadosMes.valor === undefined) ? 0.0 : (parseFloat(dadosMes.valor) || 0.0);
-                    
+
                     transacoesPlanas.push({
                         ano: anoAtivo,
                         mes: m,
@@ -1899,6 +1744,88 @@ function obterTodosTipos() {
     });
 }
 
+// Renderiza a tabela (Tipo | Efetivado | Previsto | Total) usada nos cards de detalhamento.
+function obterEstiloCorSaldo(valor) {
+    if (valor > 0) return "color: var(--color-receita);";
+    if (valor < 0) return "color: var(--color-despesa);";
+    return "color: var(--text-primary);";
+}
+
+function renderTabelaTipoDetalhe(bodyEl, dados, totaisEntradas, totaisSaidas) {
+    if (!bodyEl) return;
+
+    const saldoEf = totaisEntradas.ef - totaisSaidas.ef;
+    const saldoPrev = totaisEntradas.prev - totaisSaidas.prev;
+    const saldoTotal = totaisEntradas.total - totaisSaidas.total;
+
+    let html = `
+        <table class="card-tipo-table">
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Tipo</th>
+                    <th class="numeric">Efetivado</th>
+                    <th class="numeric">Previsto</th>
+                    <th class="numeric">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    dados.forEach(d => {
+        html += `
+            <tr>
+                <td style="text-align: left;">
+                    <span class="tipo-badge">
+                        <span class="tipo-badge-dot" style="background-color: rgb(${d.rgb.join(',')});"></span>
+                        ${d.tipo}
+                    </span>
+                </td>
+                <td class="numeric">${formatarMoeda(d.ef)}</td>
+                <td class="numeric" style="color: var(--text-secondary);">${formatarMoeda(d.prev)}</td>
+                <td class="numeric" style="font-weight: 600;">${formatarMoeda(d.total)}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td style="text-align: left;">
+                        <span class="tipo-badge" style="color: var(--color-receita);">
+                            <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Entradas
+                        </span>
+                    </td>
+                    <td class="numeric" style="color: var(--color-receita);">${formatarMoeda(totaisEntradas.ef)}</td>
+                    <td class="numeric" style="color: var(--color-receita); opacity: 0.8;">${formatarMoeda(totaisEntradas.prev)}</td>
+                    <td class="numeric" style="color: var(--color-receita); font-weight: 700;">${formatarMoeda(totaisEntradas.total)}</td>
+                </tr>
+                <tr class="total-row" style="border-top: none;">
+                    <td style="text-align: left;">
+                        <span class="tipo-badge" style="color: var(--color-despesa);">
+                            <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Saídas
+                        </span>
+                    </td>
+                    <td class="numeric" style="color: var(--color-despesa);">${formatarMoeda(totaisSaidas.ef)}</td>
+                    <td class="numeric" style="color: var(--color-despesa); opacity: 0.8;">${formatarMoeda(totaisSaidas.prev)}</td>
+                    <td class="numeric" style="color: var(--color-despesa); font-weight: 700;">${formatarMoeda(totaisSaidas.total)}</td>
+                </tr>
+                <tr class="total-row" style="border-top: none;">
+                    <td style="text-align: left;">
+                        <span class="tipo-badge" style="color: var(--text-primary);">
+                            <i class="fa-solid fa-scale-balanced" style="font-size: 10px;"></i> Saldo
+                        </span>
+                    </td>
+                    <td class="numeric" style="font-weight: 700; ${obterEstiloCorSaldo(saldoEf)}">${formatarMoeda(saldoEf)}</td>
+                    <td class="numeric" style="font-weight: 700; opacity: 0.8; ${obterEstiloCorSaldo(saldoPrev)}">${formatarMoeda(saldoPrev)}</td>
+                    <td class="numeric" style="font-weight: 700; ${obterEstiloCorSaldo(saldoTotal)}">${formatarMoeda(saldoTotal)}</td>
+                </tr>
+            </tfoot>
+        </table>
+    `;
+    bodyEl.innerHTML = html;
+}
+
 function atualizarCardsTipos() {
     const section = document.getElementById("section-cards-tipos");
     if (!section) return;
@@ -1957,67 +1884,62 @@ function atualizarCardsTipos() {
         dadosCardMes.push({ tipo, rgb, ef, prev, total, isReceita });
     });
 
-    if (bodyCardMes) {
-        let html = `
-            <table class="card-tipo-table">
-                <thead>
-                    <tr>
-                        <th style="text-align: left;">Tipo</th>
-                        <th class="numeric">Efetivado</th>
-                        <th class="numeric">Previsto</th>
-                        <th class="numeric">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        dadosCardMes.forEach(d => {
-            html += `
-                <tr>
-                    <td style="text-align: left;">
-                        <span class="tipo-badge">
-                            <span class="tipo-badge-dot" style="background-color: rgb(${d.rgb.join(',')});"></span>
-                            ${d.tipo}
-                        </span>
-                    </td>
-                    <td class="numeric">${formatarMoeda(d.ef)}</td>
-                    <td class="numeric" style="color: var(--text-secondary);">${formatarMoeda(d.prev)}</td>
-                    <td class="numeric" style="font-weight: 600;">${formatarMoeda(d.total)}</td>
-                </tr>
-            `;
-        });
-
-        html += `
-                </tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td style="text-align: left;">
-                            <span class="tipo-badge" style="color: var(--color-receita);">
-                                <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Entradas
-                            </span>
-                        </td>
-                        <td class="numeric" style="color: var(--color-receita);">${formatarMoeda(totalMesEntradas.ef)}</td>
-                        <td class="numeric" style="color: var(--color-receita); opacity: 0.8;">${formatarMoeda(totalMesEntradas.prev)}</td>
-                        <td class="numeric" style="color: var(--color-receita); font-weight: 700;">${formatarMoeda(totalMesEntradas.total)}</td>
-                    </tr>
-                    <tr class="total-row" style="border-top: none;">
-                        <td style="text-align: left;">
-                            <span class="tipo-badge" style="color: var(--color-despesa);">
-                                <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Saídas
-                            </span>
-                        </td>
-                        <td class="numeric" style="color: var(--color-despesa);">${formatarMoeda(totalMesSaidas.ef)}</td>
-                        <td class="numeric" style="color: var(--color-despesa); opacity: 0.8;">${formatarMoeda(totalMesSaidas.prev)}</td>
-                        <td class="numeric" style="color: var(--color-despesa); font-weight: 700;">${formatarMoeda(totalMesSaidas.total)}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        `;
-        bodyCardMes.innerHTML = html;
-    }
+    renderTabelaTipoDetalhe(bodyCardMes, dadosCardMes, totalMesEntradas, totalMesSaidas);
 
     // ----------------------------------------------------
-    // CARD 2: Média anual efetivada até o mês anterior
+    // CARD 2: Total anual (efetivados, previstos e total)
+    // Soma os 12 meses do ano ativo; não é afetado pelo filtro de mês.
+    // ----------------------------------------------------
+    const labelCardAno = document.getElementById("label-card-tipo-total-anual");
+    const sublabelCardAno = document.getElementById("sublabel-card-tipo-total-anual");
+    const bodyCardAno = document.getElementById("body-card-tipo-total-anual");
+
+    if (labelCardAno) {
+        labelCardAno.textContent = `Total Anual (${anoAtivo})`;
+    }
+    if (sublabelCardAno) {
+        sublabelCardAno.textContent = "Efetivados, previstos e total";
+    }
+
+    let totalAnoEntradas = { ef: 0, prev: 0, total: 0 };
+    let totalAnoSaidas = { ef: 0, prev: 0, total: 0 };
+    const dadosCardAno = [];
+
+    tipos.forEach((tipo, idx) => {
+        let ef = 0;
+        let prev = 0;
+        dadosPivotados.forEach(row => {
+            const t = getTipoFromRow(row).trim();
+            if (t.toLowerCase() === tipo.toLowerCase()) {
+                for (let m = 1; m <= 12; m++) {
+                    const dm = row.meses[m] || { valor: 0.0, pago: false };
+                    const v = parseFloat(dm.valor) || 0.0;
+                    if (boolValue(dm.pago)) ef += v;
+                    else prev += v;
+                }
+            }
+        });
+        const total = ef + prev;
+        const rgb = obterCorTipoRGB(tipo, idx);
+        const isReceita = tipo.toLowerCase() === "receita";
+
+        if (isReceita) {
+            totalAnoEntradas.ef += ef;
+            totalAnoEntradas.prev += prev;
+            totalAnoEntradas.total += total;
+        } else {
+            totalAnoSaidas.ef += ef;
+            totalAnoSaidas.prev += prev;
+            totalAnoSaidas.total += total;
+        }
+
+        dadosCardAno.push({ tipo, rgb, ef, prev, total, isReceita });
+    });
+
+    renderTabelaTipoDetalhe(bodyCardAno, dadosCardAno, totalAnoEntradas, totalAnoSaidas);
+
+    // ----------------------------------------------------
+    // CARD 3: Média anual efetivada até o mês anterior
     // Regra: se o mês for janeiro, a média é calculada até dezembro do ano anterior
     // ----------------------------------------------------
     const labelCardMediaEfet = document.getElementById("label-card-tipo-media-efetivada");
@@ -2038,12 +1960,12 @@ function atualizarCardsTipos() {
         qtdMesesEfet = numMesAlvo - 1;
         const mesFim = MESES_MAPA[numMesAlvo - 1];
         descricaoPeriodoEfet = qtdMesesEfet === 1
-            ? `Janeiro (1 mês realizado)`
-            : `Jan a ${mesFim} (${qtdMesesEfet} meses realizados)`;
+            ? `Janeiro (1 mês)`
+            : `Jan a ${mesFim} (${qtdMesesEfet} meses)`;
     }
 
     if (labelCardMediaEfet) {
-        labelCardMediaEfet.textContent = "Média Anual Efetivada";
+        labelCardMediaEfet.textContent = "Média Efetivada";
     }
     if (sublabelCardMediaEfet) {
         sublabelCardMediaEfet.textContent = descricaoPeriodoEfet;
@@ -2093,12 +2015,13 @@ function atualizarCardsTipos() {
     });
 
     if (bodyCardMediaEfet) {
+        const saldoMediaEfet = mediaEntradasEfet - mediaSaidasEfet;
         let html = `
             <table class="card-tipo-table">
                 <thead>
                     <tr>
                         <th style="text-align: left;">Tipo</th>
-                        <th class="numeric">Média Mensal</th>
+                        <th class="numeric">Média</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2124,7 +2047,7 @@ function atualizarCardsTipos() {
                     <tr class="total-row">
                         <td style="text-align: left;">
                             <span class="tipo-badge" style="color: var(--color-receita);">
-                                <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Média Entradas
+                                <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Entradas
                             </span>
                         </td>
                         <td class="numeric" style="color: var(--color-receita); font-weight: 700;">${formatarMoeda(mediaEntradasEfet)}</td>
@@ -2132,10 +2055,18 @@ function atualizarCardsTipos() {
                     <tr class="total-row" style="border-top: none;">
                         <td style="text-align: left;">
                             <span class="tipo-badge" style="color: var(--color-despesa);">
-                                <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Média Saídas
+                                <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Saídas
                             </span>
                         </td>
                         <td class="numeric" style="color: var(--color-despesa); font-weight: 700;">${formatarMoeda(mediaSaidasEfet)}</td>
+                    </tr>
+                    <tr class="total-row" style="border-top: none;">
+                        <td style="text-align: left;">
+                            <span class="tipo-badge" style="color: var(--text-primary);">
+                                <i class="fa-solid fa-scale-balanced" style="font-size: 10px;"></i> Saldo
+                            </span>
+                        </td>
+                        <td class="numeric" style="font-weight: 700; ${obterEstiloCorSaldo(saldoMediaEfet)}">${formatarMoeda(saldoMediaEfet)}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -2144,7 +2075,7 @@ function atualizarCardsTipos() {
     }
 
     // ----------------------------------------------------
-    // CARD 3: Média prevista para os meses seguintes
+    // CARD 4: Média prevista para os meses seguintes
     // Meses seguintes: (numMesAlvo + 1) até 12
     // ----------------------------------------------------
     const labelCardMediaPrev = document.getElementById("label-card-tipo-media-prevista");
@@ -2161,7 +2092,7 @@ function atualizarCardsTipos() {
         const mesInicio = MESES_MAPA[numMesAlvo + 1];
         descricaoPeriodoPrev = qtdMesesPrevistos === 1
             ? `${mesInicio} (1 mês restante)`
-            : `${mesInicio} a Dez (${qtdMesesPrevistos} meses restantes)`;
+            : `${mesInicio} a Dez (${qtdMesesPrevistos} meses)`;
     }
 
     if (labelCardMediaPrev) {
@@ -2205,12 +2136,13 @@ function atualizarCardsTipos() {
     });
 
     if (bodyCardMediaPrev) {
+        const saldoMediaPrev = mediaEntradasPrev - mediaSaidasPrev;
         let html = `
             <table class="card-tipo-table">
                 <thead>
                     <tr>
                         <th style="text-align: left;">Tipo</th>
-                        <th class="numeric">Média Mensal</th>
+                        <th class="numeric">Média</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2236,7 +2168,7 @@ function atualizarCardsTipos() {
                     <tr class="total-row">
                         <td style="text-align: left;">
                             <span class="tipo-badge" style="color: var(--color-receita);">
-                                <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Média Entradas
+                                <i class="fa-solid fa-arrow-down" style="font-size: 10px;"></i> Entradas
                             </span>
                         </td>
                         <td class="numeric" style="color: var(--color-receita); font-weight: 700;">${isDezembro ? "—" : formatarMoeda(mediaEntradasPrev)}</td>
@@ -2244,10 +2176,18 @@ function atualizarCardsTipos() {
                     <tr class="total-row" style="border-top: none;">
                         <td style="text-align: left;">
                             <span class="tipo-badge" style="color: var(--color-despesa);">
-                                <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Média Saídas
+                                <i class="fa-solid fa-arrow-up" style="font-size: 10px;"></i> Saídas
                             </span>
                         </td>
                         <td class="numeric" style="color: var(--color-despesa); font-weight: 700;">${isDezembro ? "—" : formatarMoeda(mediaSaidasPrev)}</td>
+                    </tr>
+                    <tr class="total-row" style="border-top: none;">
+                        <td style="text-align: left;">
+                            <span class="tipo-badge" style="color: var(--text-primary);">
+                                <i class="fa-solid fa-scale-balanced" style="font-size: 10px;"></i> Saldo
+                            </span>
+                        </td>
+                        <td class="numeric" style="font-weight: 700; ${isDezembro ? '' : obterEstiloCorSaldo(saldoMediaPrev)}">${isDezembro ? "—" : formatarMoeda(saldoMediaPrev)}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -3441,12 +3381,12 @@ async function carregarCarteiraGerenciar() {
         if (!resp.ok) throw new Error("Falha ao carregar ativos");
 
         carteiraGerenciarAtivos = await resp.json();
-        
+
         // Ordena por ticker
         carteiraGerenciarAtivos.sort((a, b) => (a.ticker || "").localeCompare(b.ticker || ""));
-        
+
         renderizarCarteiraGerenciar();
-        
+
         // Carrega também a tabela de rendimento
         carregarYieldDetails();
     } catch (e) {
@@ -3511,7 +3451,7 @@ function renderizarCarteiraGerenciar() {
     tbody.innerHTML = "";
 
     const disclaimer = document.getElementById("carteira-gerenciar-disclaimer");
-    
+
     if (carteiraGerenciarAtivos.length === 0) {
         const tr = document.createElement("tr");
         tr.innerHTML = '<td colspan="7" style="text-align:center;color:var(--text-secondary);">Nenhum ativo cadastrado. Clique em "Adicionar Ativo" para começar.</td>';
@@ -4476,7 +4416,7 @@ async function gerarInsightInvestimento() {
 function exibirInsight(tipo, data) {
     const contentId = tipo === 'financial' ? 'financial-insight-content' : 'investment-insight-content';
     const dateId = tipo === 'financial' ? 'financial-insight-date' : 'investment-insight-date';
-    
+
     const contentEl = document.getElementById(contentId);
     const dateEl = document.getElementById(dateId);
     if (!contentEl) return;
@@ -4487,9 +4427,9 @@ function exibirInsight(tipo, data) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/\n/g, '<br>');
-    
+
     contentEl.innerHTML = texto;
-    
+
     if (dateEl && data.created_at) {
         try {
             const d = new Date(data.created_at);
@@ -4511,13 +4451,13 @@ async function carregarPerfil() {
         if (!resp.ok) return;
 
         const data = await resp.json();
-        
+
         // Preenche formulário
         document.getElementById("profile-name").value = data.name || "";
         document.getElementById("profile-email").value = data.email || "";
         document.getElementById("profile-ai-provider").value = data.ai_provider || "";
         document.getElementById("profile-api-key").value = data.api_key || "";
-        
+
         // Atualiza header com nome e email
         atualizarHeaderUsuario(data);
     } catch (e) {
@@ -4632,7 +4572,7 @@ async function excluirConta() {
     const confirmMsg = "ATENÇÃO! Esta ação é IRREVERSÍVEL.\n\n"
         + "Todos os seus dados financeiros, investimentos, configurações e insights serão PERMANENTEMENTE EXCLUÍDOS.\n\n"
         + "Tem certeza absoluta que deseja excluir sua conta?";
-    
+
     if (!confirm(confirmMsg)) return;
     if (!confirm("Clique em OK mais uma vez para confirmar a exclusão definitiva da sua conta.")) return;
 
@@ -4671,7 +4611,7 @@ function atualizarHeaderUsuario(data) {
     } else {
         userInfo.classList.add("hidden");
     }
-    
+
     if (btnProfile) {
         btnProfile.classList.remove("hidden");
     }
@@ -4687,7 +4627,7 @@ function initPerfil() {
     if (btnSave) btnSave.addEventListener("click", salvarPerfil);
     if (btnPassword) btnPassword.addEventListener("click", salvarSenha);
     if (btnAiConfig) btnAiConfig.addEventListener("click", salvarConfigAI);
-    
+
     if (btnDelete && deleteConfirm) {
         deleteConfirm.addEventListener("change", () => {
             btnDelete.disabled = !deleteConfirm.checked;
@@ -4710,7 +4650,7 @@ function initPerfil() {
 function initInsights() {
     const btnFinancial = document.getElementById("btn-generate-financial-insight");
     const btnInvestment = document.getElementById("btn-generate-investment-insight");
-    
+
     if (btnFinancial) {
         btnFinancial.addEventListener("click", gerarInsightFinanceiro);
     }
