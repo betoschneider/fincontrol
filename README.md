@@ -52,8 +52,9 @@ O delta % do **Saldo Total do Ano Projetado** é calculado em relação ao **Sal
 #### Gráfico de Evolução Mensal
 
 - Posicionado **acima das métricas**, logo após os controles de navegação.
-- Exibição focada em **2 barras por mês**: **Entradas** (Receitas) e **Saídas** (consolidando Despesas, Investimentos e Reservas), simplificando a leitura visual e evitando sobrecarga.
-- Linha de média histórica com seletor de cálculo: **Sem min/máx** (descarta o menor e o maior valor do ano e divide por 10 — **padrão**), **Média (12 meses)** ou **Mediana**.
+- Exibição focada em **2 barras por mês**: **Entradas** (Receitas) e **Saídas** (consolidando Despesas, Investimentos, Reservas e demais tipos), com as saídas **empilhadas por tipo** para identificar visualmente cada componente.
+- Lançamentos pagos compõem o **efetivado** (cor cheia) e os não pagos o **previsto** (tom translúcido), em qualquer mês do ano.
+- Linha de média histórica com seletor de cálculo: **Sem min/máx** (descarta o menor e o maior dos 12 valores mensais e divide por 10 — **padrão**), **Média (12 meses)** (soma dos 12 meses ÷ 12) ou **Mediana**. O cálculo usa todos os lançamentos do ano (efetivados + previstos).
 
 #### Cards de Resumo por Tipo
 

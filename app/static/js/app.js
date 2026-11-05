@@ -22,6 +22,8 @@ let tipoDetalheSelecionado = "Despesa";
 let filtroTipoAtivo = "Todos";
 let filtroCategoriaAtiva = "Todas";
 let currentLoginUsername = "";
+// Visão do card de resumo: "mes" (mês selecionado) ou "ano"
+let cardTotalView = "mes";
 
 // Elementos da Interface
 const selectAno = document.getElementById("select-ano");
@@ -113,6 +115,20 @@ function configurarEventListeners() {
         selectMediaMensal.addEventListener("change", (e) => {
             tipoMediaMensal = e.target.value;
             atualizarGraficos();
+        });
+    }
+
+    // Alternância Mês/Ano do card de resumo
+    const switchCardTotal = document.getElementById("switch-card-total");
+    if (switchCardTotal) {
+        switchCardTotal.querySelectorAll(".period-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                cardTotalView = btn.dataset.view;
+                switchCardTotal.querySelectorAll(".period-btn").forEach(b => {
+                    b.classList.toggle("active", b === btn);
+                });
+                atualizarCardsTipos();
+            });
         });
     }
 
@@ -853,6 +869,7 @@ function alternarTema() {
     atualizarGraficos();
     // Gráficos da carteira capturam as cores na renderização: precisa re-renderizar
     renderizarEvolucao();
+    if (investmentPortfolio && carteiraViewMode === "yield") renderizarYieldCarteira();
     if (investmentPortfolio) renderDeviationChart(investmentPortfolio.assets || []);
 }
 
@@ -1601,7 +1618,7 @@ function atualizarGraficos() {
     });
 
     // 2. Chama funções do charts.js
-    atualizarGraficoMensal(transacoesVirtuais, anoAtivo);
+    atualizarGraficoMensal(transacoesVirtuais);
     atualizarGraficosDetalhamento(transacoesVirtuais, tipoDetalheSelecionado, apenasPagosDetalhe, mesFiltrado);
 }
 
@@ -1838,108 +1855,70 @@ function atualizarCardsTipos() {
     const tipos = obterTodosTipos();
 
     // ----------------------------------------------------
-    // CARD 1: Total do mês atual (efetivados, previstos, total)
+    // CARD 1: Total do mês selecionado (padrão) ou do ano (switch)
     // ----------------------------------------------------
-    const labelCardMes = document.getElementById("label-card-tipo-mes");
-    const sublabelCardMes = document.getElementById("sublabel-card-tipo-mes");
-    const bodyCardMes = document.getElementById("body-card-tipo-mes");
+    const labelCardTotal = document.getElementById("label-card-tipo-total");
+    const sublabelCardTotal = document.getElementById("sublabel-card-tipo-total");
+    const bodyCardTotal = document.getElementById("body-card-tipo-total");
+    const iconCardTotal = document.getElementById("icon-card-tipo-total");
 
-    if (labelCardMes) {
-        labelCardMes.textContent = isAnoCompleto ? `Mês Atual (${mesAlvo})` : `Mês: ${mesAlvo}`;
-    }
-    if (sublabelCardMes) {
-        sublabelCardMes.textContent = "Efetivados, previstos e total";
+    const mesesCardTotal = cardTotalView === "ano"
+        ? Array.from({ length: 12 }, (_, i) => i + 1)
+        : [numMesAlvo];
+
+    if (iconCardTotal) {
+        iconCardTotal.className = cardTotalView === "ano"
+            ? "fa-solid fa-calendar-days"
+            : "fa-solid fa-calendar-day";
     }
 
-    let totalMesEntradas = { ef: 0, prev: 0, total: 0 };
-    let totalMesSaidas = { ef: 0, prev: 0, total: 0 };
-    const dadosCardMes = [];
+    if (labelCardTotal) {
+        labelCardTotal.textContent = cardTotalView === "ano"
+            ? `Total Anual (${anoAtivo})`
+            : (isAnoCompleto ? `Mês Atual (${mesAlvo})` : `Mês: ${mesAlvo}`);
+    }
+    if (sublabelCardTotal) {
+        sublabelCardTotal.textContent = "Efetivados, previstos e total";
+    }
+
+    let totalEntradas = { ef: 0, prev: 0, total: 0 };
+    let totalSaidas = { ef: 0, prev: 0, total: 0 };
+    const dadosCardTotal = [];
 
     tipos.forEach((tipo, idx) => {
         let ef = 0;
         let prev = 0;
         dadosPivotados.forEach(row => {
             const t = getTipoFromRow(row).trim();
-            if (t.toLowerCase() === tipo.toLowerCase()) {
-                const dm = row.meses[numMesAlvo] || { valor: 0.0, pago: false };
+            if (t.toLowerCase() !== tipo.toLowerCase()) return;
+            mesesCardTotal.forEach(m => {
+                const dm = row.meses[m] || { valor: 0.0, pago: false };
                 const v = parseFloat(dm.valor) || 0.0;
                 if (boolValue(dm.pago)) ef += v;
                 else prev += v;
-            }
+            });
         });
         const total = ef + prev;
         const rgb = obterCorTipoRGB(tipo, idx);
         const isReceita = tipo.toLowerCase() === "receita";
 
         if (isReceita) {
-            totalMesEntradas.ef += ef;
-            totalMesEntradas.prev += prev;
-            totalMesEntradas.total += total;
+            totalEntradas.ef += ef;
+            totalEntradas.prev += prev;
+            totalEntradas.total += total;
         } else {
-            totalMesSaidas.ef += ef;
-            totalMesSaidas.prev += prev;
-            totalMesSaidas.total += total;
+            totalSaidas.ef += ef;
+            totalSaidas.prev += prev;
+            totalSaidas.total += total;
         }
 
-        dadosCardMes.push({ tipo, rgb, ef, prev, total, isReceita });
+        dadosCardTotal.push({ tipo, rgb, ef, prev, total, isReceita });
     });
 
-    renderTabelaTipoDetalhe(bodyCardMes, dadosCardMes, totalMesEntradas, totalMesSaidas);
+    renderTabelaTipoDetalhe(bodyCardTotal, dadosCardTotal, totalEntradas, totalSaidas);
 
     // ----------------------------------------------------
-    // CARD 2: Total anual (efetivados, previstos e total)
-    // Soma os 12 meses do ano ativo; não é afetado pelo filtro de mês.
-    // ----------------------------------------------------
-    const labelCardAno = document.getElementById("label-card-tipo-total-anual");
-    const sublabelCardAno = document.getElementById("sublabel-card-tipo-total-anual");
-    const bodyCardAno = document.getElementById("body-card-tipo-total-anual");
-
-    if (labelCardAno) {
-        labelCardAno.textContent = `Total Anual (${anoAtivo})`;
-    }
-    if (sublabelCardAno) {
-        sublabelCardAno.textContent = "Efetivados, previstos e total";
-    }
-
-    let totalAnoEntradas = { ef: 0, prev: 0, total: 0 };
-    let totalAnoSaidas = { ef: 0, prev: 0, total: 0 };
-    const dadosCardAno = [];
-
-    tipos.forEach((tipo, idx) => {
-        let ef = 0;
-        let prev = 0;
-        dadosPivotados.forEach(row => {
-            const t = getTipoFromRow(row).trim();
-            if (t.toLowerCase() === tipo.toLowerCase()) {
-                for (let m = 1; m <= 12; m++) {
-                    const dm = row.meses[m] || { valor: 0.0, pago: false };
-                    const v = parseFloat(dm.valor) || 0.0;
-                    if (boolValue(dm.pago)) ef += v;
-                    else prev += v;
-                }
-            }
-        });
-        const total = ef + prev;
-        const rgb = obterCorTipoRGB(tipo, idx);
-        const isReceita = tipo.toLowerCase() === "receita";
-
-        if (isReceita) {
-            totalAnoEntradas.ef += ef;
-            totalAnoEntradas.prev += prev;
-            totalAnoEntradas.total += total;
-        } else {
-            totalAnoSaidas.ef += ef;
-            totalAnoSaidas.prev += prev;
-            totalAnoSaidas.total += total;
-        }
-
-        dadosCardAno.push({ tipo, rgb, ef, prev, total, isReceita });
-    });
-
-    renderTabelaTipoDetalhe(bodyCardAno, dadosCardAno, totalAnoEntradas, totalAnoSaidas);
-
-    // ----------------------------------------------------
-    // CARD 3: Média anual efetivada até o mês anterior
+    // CARD 2: Média anual efetivada até o mês anterior
     // Regra: se o mês for janeiro, a média é calculada até dezembro do ano anterior
     // ----------------------------------------------------
     const labelCardMediaEfet = document.getElementById("label-card-tipo-media-efetivada");
@@ -2075,7 +2054,7 @@ function atualizarCardsTipos() {
     }
 
     // ----------------------------------------------------
-    // CARD 4: Média prevista para os meses seguintes
+    // CARD 3: Média prevista para os meses seguintes
     // Meses seguintes: (numMesAlvo + 1) até 12
     // ----------------------------------------------------
     const labelCardMediaPrev = document.getElementById("label-card-tipo-media-prevista");
@@ -2196,103 +2175,126 @@ function atualizarCardsTipos() {
     }
 }
 
-function atualizarGraficoMensal(transacoes, anoSelecionado) {
+function atualizarGraficoMensal(transacoes) {
     const canvas = document.getElementById('chart-mensal');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const mesesAbreviados = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-    // Agrupamento em 2 barras: Entradas (Receita) e Saídas (Não Receita)
-    const dadosFluxo = {
-        "Entradas": { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) },
-        "Saídas": { efetivado: Array(12).fill(0), previsto: Array(12).fill(0) }
-    };
+    // Agrupa os lançamentos por tipo. Entradas e Saídas formam duas barras
+    // empilhadas por mês; dentro de cada barra, cada tipo é um segmento.
+    const tiposOrdenados = obterTodosTipos();
+    const gruposPorTipo = new Map();
 
-    const hoje = new Date();
-    const mesAtualSistema = hoje.getMonth() + 1;
-    const anoAtualSistema = hoje.getFullYear();
+    function obterOrdemTipo(tipo) {
+        const idx = tiposOrdenados.findIndex(t => t.toLowerCase() === tipo.toLowerCase());
+        return idx === -1 ? 999 : idx;
+    }
+
+    function obterGrupo(tipoOriginal) {
+        const tipo = tipoOriginal.trim();
+        const chave = tipo.toLowerCase();
+        if (gruposPorTipo.has(chave)) return gruposPorTipo.get(chave);
+
+        const ordem = obterOrdemTipo(tipo);
+        const grupo = {
+            tipo,
+            rgb: obterCorTipoRGB(tipo, ordem === 999 ? gruposPorTipo.size : ordem),
+            fluxo: chave === "receita" ? "Entradas" : "Saídas",
+            efetivado: Array(12).fill(0),
+            previsto: Array(12).fill(0)
+        };
+        gruposPorTipo.set(chave, grupo);
+        return grupo;
+    }
 
     transacoes.forEach(t => {
-        const tipoLower = (t.tipo || '').trim().toLowerCase();
-        const fluxo = tipoLower === "receita" ? "Entradas" : "Saídas";
+        const tipo = (t.tipo || '').trim();
+        if (!tipo) return;
 
         const idxMes = t.mes - 1;
         if (idxMes < 0 || idxMes > 11) return;
 
         const valor = parseFloat(t.valor) || 0.0;
         const pago = boolValue(t.pago);
-        const isMesPassado = (anoSelecionado < anoAtualSistema) || (anoSelecionado === anoAtualSistema && t.mes < mesAtualSistema);
 
-        if (pago) {
-            dadosFluxo[fluxo].efetivado[idxMes] += valor;
-        } else if (!isMesPassado) {
-            dadosFluxo[fluxo].previsto[idxMes] += valor;
-        }
+        // Todo lançamento compõe o gráfico: pagos formam o efetivado e os
+        // demais o previsto, inclusive em meses passados. Descartar os não
+        // pagos de meses passados criava meses zerados e distorcia as linhas
+        // de média/mediana anuais.
+        const grupo = obterGrupo(tipo);
+        if (pago) grupo.efetivado[idxMes] += valor;
+        else grupo.previsto[idxMes] += valor;
     });
 
-    const configsFluxo = [
-        {
-            chave: "Entradas",
-            label: "Entradas",
-            rgb: CORES_RGB["Receita"] || [0, 158, 115],
-            stack: "entradas"
-        },
-        {
-            chave: "Saídas",
-            label: "Saídas",
-            rgb: CORES_RGB["Despesa"] || [213, 94, 0],
-            stack: "saidas"
-        }
-    ];
+    // Entradas primeiro; depois os demais tipos na ordem padrão
+    const grupos = Array.from(gruposPorTipo.values()).sort((a, b) => {
+        if (a.fluxo !== b.fluxo) return a.fluxo === "Entradas" ? -1 : 1;
+        const ordemA = obterOrdemTipo(a.tipo);
+        const ordemB = obterOrdemTipo(b.tipo);
+        if (ordemA !== ordemB) return ordemA - ordemB;
+        return a.tipo.localeCompare(b.tipo);
+    });
 
-    const mediasAnuais = {};
-    configsFluxo.forEach(cfg => {
+    // Média mensal de cada fluxo (soma de todos os tipos empilhados)
+    const mediasFluxo = {};
+    ["Entradas", "Saídas"].forEach(fluxo => {
         const valoresMensais = [];
         for (let m = 0; m < 12; m += 1) {
             valoresMensais.push(
-                (dadosFluxo[cfg.chave].efetivado[m] || 0) + (dadosFluxo[cfg.chave].previsto[m] || 0)
+                grupos
+                    .filter(g => g.fluxo === fluxo)
+                    .reduce((soma, g) => soma + g.efetivado[m] + g.previsto[m], 0)
             );
         }
-        mediasAnuais[cfg.chave] = calcularMediaTipo(valoresMensais, tipoMediaMensal);
+        mediasFluxo[fluxo] = calcularMediaTipo(valoresMensais, tipoMediaMensal);
     });
 
     const datasets = [];
 
-    configsFluxo.forEach(cfg => {
-        const rgb = cfg.rgb;
+    grupos.forEach(grupo => {
+        const rgb = grupo.rgb;
         const corEfetivado = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 1.0)`;
         const corPrevisto = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.35)`;
+        const stack = grupo.fluxo.toLowerCase();
 
         datasets.push({
             type: 'bar',
-            label: `${cfg.label} (Efetivado)`,
-            data: dadosFluxo[cfg.chave].efetivado,
+            label: `${grupo.tipo} (Efetivado)`,
+            data: grupo.efetivado,
             backgroundColor: corEfetivado,
             borderColor: corEfetivado,
             borderWidth: 1,
-            stack: cfg.stack,
+            stack: stack,
             barPercentage: 0.8,
-            categoryPercentage: 0.8
+            categoryPercentage: 0.8,
+            _tipo: grupo.tipo
         });
 
         datasets.push({
             type: 'bar',
-            label: `${cfg.label} (Previsto)`,
-            data: dadosFluxo[cfg.chave].previsto,
+            label: `${grupo.tipo} (Previsto)`,
+            data: grupo.previsto,
             backgroundColor: corPrevisto,
             borderColor: corEfetivado,
             borderWidth: 1,
             borderDash: [2, 2],
-            stack: cfg.stack,
+            stack: stack,
             barPercentage: 0.8,
-            categoryPercentage: 0.8
+            categoryPercentage: 0.8,
+            _tipo: grupo.tipo
         });
+    });
 
+    // Linhas de média por fluxo (Entradas/Saídas)
+    ["Entradas", "Saídas"].forEach(fluxo => {
+        if (!grupos.some(g => g.fluxo === fluxo)) return;
+        const rgb = obterCorTipoRGB(fluxo, 0);
         datasets.push({
             type: 'line',
-            label: `${MEDIA_LABELS[tipoMediaMensal] || "Média Anual"} ${cfg.label}`,
-            data: Array(12).fill(mediasAnuais[cfg.chave]),
-            borderColor: corEfetivado,
+            label: `${MEDIA_LABELS[tipoMediaMensal] || "Média Anual"} ${fluxo}`,
+            data: Array(12).fill(mediasFluxo[fluxo]),
+            borderColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 1.0)`,
             borderWidth: 2,
             borderDash: [5, 5],
             fill: false,
@@ -2320,33 +2322,31 @@ function atualizarGraficoMensal(transacoes, anoSelecionado) {
                     labels: {
                         color: corTextoTema(),
                         font: { family: 'system-ui, sans-serif', size: 12 },
-                        filter: function(item) {
-                            return !item.text.includes('(Previsto)');
-                        },
                         generateLabels: function(chart) {
                             const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-                            return original.map(item => {
-                                if (item.text.includes(' (Efetivado)')) {
-                                    item.text = item.text.replace(' (Efetivado)', '');
-                                }
-                                return item;
-                            });
+                            return original
+                                .filter(item => !item.text.includes('(Previsto)'))
+                                .map(item => {
+                                    if (item.text.includes(' (Efetivado)')) {
+                                        item.text = item.text.replace(' (Efetivado)', '');
+                                    }
+                                    return item;
+                                });
                         }
                     },
                     onClick: function(e, legendItem, legend) {
                         const chart = legend.chart;
-                        const text = legendItem.text;
-                        if (text === "Entradas" || text.includes("Entradas")) {
-                            const isHidden = !chart.isDatasetVisible(0);
-                            chart.setDatasetVisibility(0, isHidden);
-                            chart.setDatasetVisibility(1, isHidden);
-                        } else if (text === "Saídas" || text.includes("Saídas")) {
-                            const isHidden = !chart.isDatasetVisible(3);
-                            chart.setDatasetVisibility(3, isHidden);
-                            chart.setDatasetVisibility(4, isHidden);
+                        const index = legendItem.datasetIndex;
+                        const dataset = chart.data.datasets[index];
+                        const destino = !chart.isDatasetVisible(index);
+
+                        if (dataset && dataset._tipo) {
+                            // Liga/desliga juntos o efetivado e o previsto do mesmo tipo
+                            chart.data.datasets.forEach((d, i) => {
+                                if (d._tipo === dataset._tipo) chart.setDatasetVisibility(i, destino);
+                            });
                         } else {
-                            const index = legendItem.datasetIndex;
-                            chart.setDatasetVisibility(index, !chart.isDatasetVisible(index));
+                            chart.setDatasetVisibility(index, destino);
                         }
                         chart.update();
                     }
@@ -2373,6 +2373,7 @@ function atualizarGraficoMensal(transacoes, anoSelecionado) {
                     ticks: { color: corTextoSecundarioTema(), font: { family: 'system-ui, sans-serif' } }
                 },
                 y: {
+                    stacked: true,
                     grid: { color: 'rgba(128, 128, 128, 0.15)' },
                     ticks: {
                         color: corTextoSecundarioTema(),
@@ -2598,6 +2599,9 @@ let investmentPortfolio = null;
 let investmentDeviationChart = null;
 let investmentSuggestions = [];
 
+// Visão do card principal da carteira: "evolucao" (padrão) ou "yield"
+let carteiraViewMode = "evolucao";
+
 const GROUP_COLORS = [
     "#0072b2", "#d55e00", "#009e73", "#e69f00",
     "#56b4e9", "#cc79a7", "#f0e442", "#999999"
@@ -2651,6 +2655,7 @@ function initInvestments() {
         } else {
             // Mantém o gráfico de evolução atualizado (o upsert diário ocorre no /portfolio)
             carregarEvolucao();
+            if (carteiraViewMode === "yield") renderizarYieldCarteira();
             // Verifica se está vazio e redireciona
             if (!investmentPortfolio.assets || investmentPortfolio.assets.length === 0) {
                 const firstTime = localStorage.getItem('carteira_first_visit');
@@ -2663,6 +2668,7 @@ function initInvestments() {
     };
 
     configurarFiltrosEvolucao();
+    configurarSwitchCarteira();
 }
 
 async function carregarInvestments() {
@@ -2744,6 +2750,7 @@ function renderInvestmentPortfolio() {
     if (!assets.length) {
         renderEmptyRow(tbody, 10, "Importe um CSV para iniciar a carteira.");
         renderDeviationChart([]);
+        if (carteiraViewMode === "yield") renderizarYieldCarteira();
         return;
     }
 
@@ -2771,6 +2778,7 @@ function renderInvestmentPortfolio() {
     });
 
     renderDeviationChart(assets);
+    if (carteiraViewMode === "yield") renderizarYieldCarteira();
 }
 
 function renderDeviationChart(assets) {
@@ -3112,6 +3120,9 @@ async function carregarEvolucao() {
 }
 
 function renderizarEvolucao() {
+    // O canvas fica oculto quando a visão de yield está ativa
+    if (carteiraViewMode !== "evolucao") return;
+
     const canvas = document.getElementById("chart-evolucao");
     if (!canvas || typeof Chart === "undefined") return;
 
@@ -3332,6 +3343,166 @@ function configurarFiltrosEvolucao() {
             renderizarEvolucao();
         });
     });
+}
+
+// ===================================================================
+// Yield por grupo e por ramo (barras horizontais)
+// ===================================================================
+
+let chartYieldGrupoInstancia = null;
+let chartYieldRamoInstancia = null;
+
+function configurarSwitchCarteira() {
+    const container = document.getElementById("switch-carteira-grafico");
+    if (!container) return;
+    container.querySelectorAll(".period-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            carteiraViewMode = btn.dataset.view;
+            container.querySelectorAll(".period-btn").forEach(b => {
+                b.classList.toggle("active", b === btn);
+            });
+            aplicarVisaoCarteira();
+        });
+    });
+}
+
+function aplicarVisaoCarteira() {
+    const modoYield = carteiraViewMode === "yield";
+    const viewEvolucao = document.getElementById("carteira-view-evolucao");
+    const viewYield = document.getElementById("carteira-view-yield");
+    const filtros = document.getElementById("evolucao-filtros");
+    const titulo = document.getElementById("titulo-carteira-grafico");
+
+    if (viewEvolucao) viewEvolucao.classList.toggle("hidden", modoYield);
+    if (viewYield) viewYield.classList.toggle("hidden", !modoYield);
+    if (filtros) filtros.classList.toggle("hidden", modoYield);
+    if (titulo) titulo.textContent = modoYield ? "Yield da Carteira" : "Evolução da Carteira";
+
+    if (modoYield) {
+        renderizarYieldCarteira();
+    } else {
+        renderizarEvolucao();
+    }
+}
+
+// Agrega os ativos por grupo ou ramo, calculando yield e patrimônio.
+function agregarYieldCarteira(assets, chave, rotuloVazio) {
+    const mapa = new Map();
+
+    assets.forEach(asset => {
+        const nome = String(asset[chave] || "").trim() || rotuloVazio;
+        const item = mapa.get(nome) || { nome, patrimonio: 0, custo: 0 };
+        item.patrimonio += asset.total || 0;
+        item.custo += asset.cost || 0;
+        mapa.set(nome, item);
+    });
+
+    return Array.from(mapa.values())
+        .map(item => ({
+            nome: item.nome,
+            patrimonio: item.patrimonio,
+            yield: item.custo > 0 ? (item.patrimonio / item.custo - 1) * 100 : null
+        }))
+        .sort((a, b) => (b.yield ?? -Infinity) - (a.yield ?? -Infinity));
+}
+
+function desenharMensagemCanvas(canvas, mensagem) {
+    const ctx = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.round(rect.width * dpr));
+    canvas.height = Math.max(1, Math.round(rect.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.font = "14px system-ui, sans-serif";
+    ctx.fillStyle = corTextoSecundarioTema();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(mensagem, rect.width / 2, rect.height / 2);
+}
+
+function renderizarYieldGrafico(canvasId, instancia, itens) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas || typeof Chart === "undefined") return instancia;
+
+    if (instancia) {
+        instancia.destroy();
+        instancia = null;
+    }
+
+    if (!itens.length) {
+        desenharMensagemCanvas(canvas, "Sem ativos com preço de compra para calcular o yield.");
+        return null;
+    }
+
+    const textColor = corTextoTema();
+    const gridColor = getComputedStyle(document.body).getPropertyValue("--border-color").trim() || "rgba(128, 128, 128, 0.15)";
+
+    return new Chart(canvas, {
+        type: "bar",
+        data: {
+            labels: itens.map(item => item.nome),
+            datasets: [{
+                label: "Yield",
+                data: itens.map(item => (item.yield === null ? 0 : item.yield)),
+                backgroundColor: itens.map(item => colorForGroup(item.nome)),
+                borderRadius: 4,
+                maxBarThickness: 26
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const item = itens[context.dataIndex];
+                            const yieldTxt = item.yield === null
+                                ? "—"
+                                : `${item.yield >= 0 ? "+" : ""}${formatNumber(item.yield, 2)}%`;
+                            return [
+                                `Yield: ${yieldTxt}`,
+                                `Patrimônio: ${formatarMoeda(item.patrimonio)}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: gridColor },
+                    ticks: {
+                        color: textColor,
+                        callback: value => `${formatNumber(value, 0)}%`
+                    }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: textColor }
+                }
+            }
+        }
+    });
+}
+
+function renderizarYieldCarteira() {
+    const assets = investmentPortfolio?.assets || [];
+    const porGrupo = agregarYieldCarteira(assets, "group", "Sem grupo");
+    const porRamo = agregarYieldCarteira(assets, "sector", "Sem ramo");
+
+    chartYieldGrupoInstancia = renderizarYieldGrafico(
+        "chart-yield-grupo",
+        chartYieldGrupoInstancia,
+        porGrupo
+    );
+    chartYieldRamoInstancia = renderizarYieldGrafico(
+        "chart-yield-ramo",
+        chartYieldRamoInstancia,
+        porRamo
+    );
 }
 
 // ===================================================================

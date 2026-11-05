@@ -15,7 +15,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Versão dos assets para cache-busting: incremente manualmente ao deploy (ex: v1 -> v2) -->
-    <link rel="stylesheet" href="css/style.css?v=46">
+    <link rel="stylesheet" href="css/style.css?v=47">
 </head>
 
 <body>
@@ -245,41 +245,30 @@
             </div>
         </section>
 
-        <!-- Cards de Resumo por Tipo (Mês Atual, Total Anual, Média Efetivada, Média Prevista) -->
+        <!-- Cards de Resumo por Tipo (Total Mês/Ano, Média Efetivada, Média Prevista) -->
         <section class="cards-tipos-grid financial-only" id="section-cards-tipos">
-            <!-- Card 1: Total do Mês Atual (Efetivados, Previstos e Total) -->
-            <div class="metric-card glass card-tipo-detalhe" id="card-tipo-mes-atual">
-                <div class="card-tipo-header">
-                    <div class="card-tipo-header-title">
-                        <div class="metric-icon income" style="width:38px;height:38px;font-size:16px;"><i
-                                class="fa-solid fa-calendar-day"></i></div>
-                        <div>
-                            <span class="metric-label" id="label-card-tipo-mes">Lançamentos do Mês</span>
-                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-mes">Efetivados, previstos e
-                                total</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-tipo-body" id="body-card-tipo-mes"></div>
-            </div>
-
-            <!-- Card 2: Total Anual (Efetivados, Previstos e Total) -->
-            <div class="metric-card glass card-tipo-detalhe" id="card-tipo-total-anual">
+            <!-- Card 1: Total do Mês ou do Ano (switch) -->
+            <div class="metric-card glass card-tipo-detalhe" id="card-tipo-total">
                 <div class="card-tipo-header">
                     <div class="card-tipo-header-title">
                         <div class="metric-icon income-year" style="width:38px;height:38px;font-size:16px;"><i
-                                class="fa-solid fa-calendar-days"></i></div>
+                                class="fa-solid fa-calendar-day" id="icon-card-tipo-total"></i></div>
                         <div>
-                            <span class="metric-label" id="label-card-tipo-total-anual">Total Anual</span>
-                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-total-anual">Efetivados, previstos e
+                            <span class="metric-label" id="label-card-tipo-total">Lançamentos do Mês</span>
+                            <span class="card-tipo-sublabel" id="sublabel-card-tipo-total">Efetivados, previstos e
                                 total</span>
                         </div>
                     </div>
+                    <div class="period-filter card-total-switch" id="switch-card-total" role="group"
+                        aria-label="Período do resumo">
+                        <button type="button" class="period-btn active" data-view="mes">Mês</button>
+                        <button type="button" class="period-btn" data-view="ano">Ano</button>
+                    </div>
                 </div>
-                <div class="card-tipo-body" id="body-card-tipo-total-anual"></div>
+                <div class="card-tipo-body" id="body-card-tipo-total"></div>
             </div>
 
-            <!-- Card 3: Média Efetivada até o Mês Anterior -->
+            <!-- Card 2: Média Efetivada até o Mês Anterior -->
             <div class="metric-card glass card-tipo-detalhe" id="card-tipo-media-efetivada">
                 <div class="card-tipo-header">
                     <div class="card-tipo-header-title">
@@ -295,7 +284,7 @@
                 <div class="card-tipo-body" id="body-card-tipo-media-efetivada"></div>
             </div>
 
-            <!-- Card 4: Média Prevista para os Meses Seguintes -->
+            <!-- Card 3: Média Prevista para os Meses Seguintes -->
             <div class="metric-card glass card-tipo-detalhe" id="card-tipo-media-prevista">
                 <div class="card-tipo-header">
                     <div class="card-tipo-header-title">
@@ -445,16 +434,39 @@
                 <!-- Evolução da Carteira: Yield (%) e Patrimônio no mesmo gráfico, ao lado dos cards -->
                 <section class="chart-card glass carteira-evolucao-card">
                     <div class="evolucao-header">
-                        <h3><i class="fa-solid fa-chart-line"></i> Evolução da Carteira</h3>
-                        <div class="period-filter" id="evolucao-filtros">
-                            <button type="button" class="period-btn" data-period="6">6M</button>
-                            <button type="button" class="period-btn active" data-period="12">12M</button>
-                            <button type="button" class="period-btn" data-period="24">24M</button>
-                            <button type="button" class="period-btn" data-period="all">Tudo</button>
+                        <h3><i class="fa-solid fa-chart-line"></i> <span id="titulo-carteira-grafico">Evolução da
+                            Carteira</span></h3>
+                        <div class="evolucao-header-controls">
+                            <div class="period-filter" id="switch-carteira-grafico" role="group"
+                                aria-label="Visualização do gráfico da carteira">
+                                <button type="button" class="period-btn active" data-view="evolucao">Evolução</button>
+                                <button type="button" class="period-btn" data-view="yield">Yield</button>
+                            </div>
+                            <div class="period-filter" id="evolucao-filtros">
+                                <button type="button" class="period-btn" data-period="6">6M</button>
+                                <button type="button" class="period-btn active" data-period="12">12M</button>
+                                <button type="button" class="period-btn" data-period="24">24M</button>
+                                <button type="button" class="period-btn" data-period="all">Tudo</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="chart-container carteira-evolucao-chart" style="height: 340px;">
+                    <div class="chart-container carteira-evolucao-chart" id="carteira-view-evolucao"
+                        style="height: 340px;">
                         <canvas id="chart-evolucao"></canvas>
+                    </div>
+                    <div class="carteira-yield-grid hidden" id="carteira-view-yield">
+                        <div>
+                            <h4><i class="fa-solid fa-layer-group"></i> Yield por Grupo</h4>
+                            <div class="chart-container carteira-yield-chart">
+                                <canvas id="chart-yield-grupo"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4><i class="fa-solid fa-tags"></i> Yield por Ramo</h4>
+                            <div class="chart-container carteira-yield-chart">
+                                <canvas id="chart-yield-ramo"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -909,7 +921,7 @@
     </div>
 
     <!-- Scripts da Aplicação -->
-    <script src="js/app.js?v=46"></script>
+    <script src="js/app.js?v=47"></script>
 </body>
 
 </html>

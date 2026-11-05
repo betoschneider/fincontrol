@@ -1679,6 +1679,30 @@ body.investment-mode .app-header {
     gap: 12px;
 }
 
+.evolucao-header-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Yield por grupo/ramo (barras horizontais) */
+.carteira-yield-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.carteira-yield-grid h4 {
+    margin-bottom: 10px;
+}
+
+.carteira-yield-chart {
+    height: 280px;
+    min-height: 280px;
+    max-height: 280px;
+}
+
 .period-filter {
     display: inline-flex;
     gap: 4px;
@@ -1722,11 +1746,10 @@ body.investment-mode .app-header {
     cursor: pointer;
 }
 
-/* Cards de Resumo por Tipo (Mês Atual, Total Anual, Média Efetivada, Média Prevista) */
-/* Mês Atual e Total Anual são mais largos (têm 4 colunas de dados); as médias, mais estreitas. */
+/* Cards de Resumo por Tipo (Total Mês/Ano, Média Efetivada, Média Prevista) */
 .cards-tipos-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
+    grid-template-columns: 1.6fr 1fr 1fr;
     gap: 20px;
     margin-bottom: 24px;
 }
@@ -1758,9 +1781,21 @@ body.investment-mode .app-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-bottom: 14px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
+}
+
+/* Switch Mês/Ano dentro do card de total */
+.card-total-switch {
+    padding: 2px;
+}
+
+.card-total-switch .period-btn {
+    padding: 4px 12px;
+    font-size: 12px;
 }
 
 .card-tipo-header-title {
