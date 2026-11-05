@@ -9,4 +9,17 @@ data
 *.db
 __pycache__
 *.py[cod]
+# Estrutura de pastas
 estrutura.txt
+
+# Ferramentas e agentes de IA locais
+skills/
+.agents/
+.gemini/
+
+# Cache
+.pytest_cache/
+.ruff_cache/
+
+# Desenvolvimento
+btc.md
