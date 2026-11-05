@@ -1646,7 +1646,7 @@ let chartMensalInstancia = null;
 let chartRoscaInstancia = null;
 let chartBarrasHInstancia = null;
 
-// Metodo de calculo da linha de media por tipo no grafico de Evolucao Mensal
+// Metodo de calculo da linha de media das Entradas no grafico de Evolucao Mensal
 let tipoMediaMensal = "sem_minmax"; // "media" | "sem_minmax" | "mediana"
 
 const MEDIA_LABELS = {
@@ -2236,19 +2236,16 @@ function atualizarGraficoMensal(transacoes) {
         return a.tipo.localeCompare(b.tipo);
     });
 
-    // Média mensal de cada fluxo (soma de todos os tipos empilhados)
-    const mediasFluxo = {};
-    ["Entradas", "Saídas"].forEach(fluxo => {
-        const valoresMensais = [];
-        for (let m = 0; m < 12; m += 1) {
-            valoresMensais.push(
-                grupos
-                    .filter(g => g.fluxo === fluxo)
-                    .reduce((soma, g) => soma + g.efetivado[m] + g.previsto[m], 0)
-            );
-        }
-        mediasFluxo[fluxo] = calcularMediaTipo(valoresMensais, tipoMediaMensal);
-    });
+    // Média mensal das Entradas (soma de todos os tipos empilhados)
+    const valoresEntradas = [];
+    for (let m = 0; m < 12; m += 1) {
+        valoresEntradas.push(
+            grupos
+                .filter(g => g.fluxo === "Entradas")
+                .reduce((soma, g) => soma + g.efetivado[m] + g.previsto[m], 0)
+        );
+    }
+    const mediaEntradas = calcularMediaTipo(valoresEntradas, tipoMediaMensal);
 
     const datasets = [];
 
@@ -2286,14 +2283,13 @@ function atualizarGraficoMensal(transacoes) {
         });
     });
 
-    // Linhas de média por fluxo (Entradas/Saídas)
-    ["Entradas", "Saídas"].forEach(fluxo => {
-        if (!grupos.some(g => g.fluxo === fluxo)) return;
-        const rgb = obterCorTipoRGB(fluxo, 0);
+    // Linha de média apenas das Entradas
+    if (grupos.some(g => g.fluxo === "Entradas")) {
+        const rgb = obterCorTipoRGB("Entradas", 0);
         datasets.push({
             type: 'line',
-            label: `${MEDIA_LABELS[tipoMediaMensal] || "Média Anual"} ${fluxo}`,
-            data: Array(12).fill(mediasFluxo[fluxo]),
+            label: `${MEDIA_LABELS[tipoMediaMensal] || "Média Anual"} Entradas`,
+            data: Array(12).fill(mediaEntradas),
             borderColor: `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 1.0)`,
             borderWidth: 2,
             borderDash: [5, 5],
@@ -2302,7 +2298,7 @@ function atualizarGraficoMensal(transacoes) {
             pointHitRadius: 0,
             order: -1
         });
-    });
+    }
 
     if (chartMensalInstancia) {
         chartMensalInstancia.destroy();
